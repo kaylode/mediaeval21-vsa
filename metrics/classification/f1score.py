@@ -7,8 +7,9 @@ class F1ScoreMetric():
     """
     F1 Score Metric (including macro, micro)
     """
-    def __init__(self, average = 'macro'):
+    def __init__(self, multilabel_threshold=0.5, average = 'macro'):
         self.average = average
+        self.multilabel_threshold = multilabel_threshold
         self.reset()
 
     def update(self, outputs, targets):
@@ -21,6 +22,8 @@ class F1ScoreMetric():
     def compute(self): 
         self.targets = np.concatenate(self.targets)
         self.preds = np.concatenate(self.preds)
+        self.preds = self.preds > self.multilabel_threshold
+        self.preds = self.preds.astype(np.int)
         return f1_score(self.targets, self.preds, average=self.average)
 
     def value(self):

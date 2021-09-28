@@ -7,8 +7,10 @@ def compute_multiclass(output, target):
     sample_size = output.size(0)
     return correct, sample_size
 
-def compute_multilabel(output, target):
-    correct = (output == target)
+def compute_multilabel(output, target, thresh=0.7):
+    preds = output > thresh
+    preds = preds.astype(np.int)
+    correct = (preds == target)
     results = 0
     for i in correct:
         results += i.all()
