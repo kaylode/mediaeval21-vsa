@@ -18,7 +18,7 @@ class F1ScoreMetric():
         for pd, gt in zip(pred, targets):
             self.count_dict[gt]['total_gt'] += 1
             self.count_dict[pd]['total_p'] += 1
-            if pd == gt:
+            if (pd == gt).all():
                 self.count_dict[pd]['total_pt'] +=1
     
     def compute(self, item):
