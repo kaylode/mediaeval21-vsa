@@ -14,7 +14,7 @@ def compute_multilabel(output, target, thresh=0.7):
     results = 0
     for i in correct:
         results += i.all()
-    sample_size = output.size(0)
+    sample_size = target.shape[0]
     return results, sample_size
 
 def compute_binary(output, target, thresh=0.7):
@@ -41,10 +41,12 @@ class AccuracyMetric():
         self.compute_fn = get_compute(types)
         
     def compute(self, outputs, targets):
-        return self.compute_fn(outputs.squeeze(1), targets)
+        return self.compute_fn(outputs, targets)
 
     def update(self,  outputs, targets):
         assert isinstance(outputs, torch.Tensor), "Please input tensors"
+        outputs = outputs.squeeze().cpu().numpy()
+        targets = targets.cpu().numpy()
         value = self.compute(outputs, targets)
         self.correct += value[0]
         self.sample_size += value[1]
@@ -55,10 +57,7 @@ class AccuracyMetric():
 
     def value(self):
         values = self.correct / self.sample_size
-
-        if values.is_cuda:
-            values = values.cpu()
-        return {"acc" : np.around(values.numpy(), decimals = self.decimals)}
+        return {"acc" : np.around(values, decimals = self.decimals)}
 
     def __str__(self):
         return f'Accuracy: {self.value()}'
