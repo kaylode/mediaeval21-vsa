@@ -29,10 +29,10 @@ def train(args, config):
     #     config.tta = None
 
     metric = [
-        AccuracyMetric(),
-        BalancedAccuracyMetric(num_classes=trainset.num_classes), 
-        ConfusionMatrix(trainset.classes), 
-        F1ScoreMetric(n_classes=trainset.num_classes)
+        AccuracyMetric(types='multilabel'),
+        # BalancedAccuracyMetric(num_classes=trainset.num_classes), 
+        # ConfusionMatrix(trainset.classes), 
+        F1ScoreMetric()
     ]
 
     criterion = get_loss(config.loss_fn)
