@@ -38,15 +38,10 @@ def train(args, config):
     criterion = get_loss(config.loss_fn)
     optimizer, optimizer_params = get_lr_policy(config.lr_policy)
 
-    if config.mixed_precision:
-        scaler = NativeScaler()
-    else:
-        scaler = None
-
     model = Classifier(
             model = net,
             metrics=metric,
-            scaler=scaler,
+            scaler=NativeScaler(),
             criterion=criterion,
             optimizer= optimizer,
             optim_params = optimizer_params,     

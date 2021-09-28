@@ -268,7 +268,7 @@ class Trainer():
                 round(self.cfg.total_accumulate_steps / self.cfg.batch_size), 1)
 
     def set_amp(self):
-        self.use_amp = False
+        self.use_amp = False 
         if self.cfg.mixed_precision:
             self.use_amp = True
 
