@@ -7,8 +7,15 @@ def compute_multiclass(output, target):
     sample_size = output.size(0)
     return correct, sample_size
 
+def compute_multilabel(output, target):
+    correct = (output == target)
+    results = 0
+    for i in correct:
+        results += i.all()
+    sample_size = output.size(0)
+    return results, sample_size
+
 def compute_binary(output, target, thresh=0.7):
-    
     pred = output >= thresh
     correct = (pred == target).sum()
     sample_size = output.size(0)
@@ -17,14 +24,16 @@ def compute_binary(output, target, thresh=0.7):
 def get_compute(types):
     if types == 'binary':
         return compute_binary
-    elif types == 'multi':
+    elif types == 'multiclass':
         return compute_multiclass
+    elif types == 'multilabel':
+        return compute_multilabel
 
 class AccuracyMetric():
     """
     Accuracy metric for classification
     """
-    def __init__(self, types = 'multi', decimals = 10):
+    def __init__(self, types = 'multiclass', decimals = 10):
         self.reset()
         self.decimals = decimals
         self.compute_fn = get_compute(types)
@@ -56,9 +65,9 @@ class AccuracyMetric():
         return len(self.sample_size)
 
 if __name__ == '__main__':
-    accuracy = AccuracyMetric(decimals = 4)
-    out = [[1,4,2],[5,7,4],[2,3,0]]
-    label = [[1, 1, 0]]
+    accuracy = AccuracyMetric(decimals = 4, types='multilabel')
+    out = [[1,0,1],[1,1,0],[0,0,0]]
+    label = [[1, 1, 0], [1, 1, 0], [1, 1, 0]]
     outputs = torch.LongTensor(out)
     targets = torch.LongTensor(label)
     accuracy.update(outputs, targets)
