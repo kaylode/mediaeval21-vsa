@@ -66,7 +66,7 @@ def get_lr_scheduler(optimizer, lr_config, **kwargs):
         scheduler = OneCycleLR(
             optimizer,
             max_lr=0.001,
-            epochs=n_epochs,
+            epochs=kwargs["num_epochs"],
             steps_per_epoch=int(len(kwargs["trainset"]) / kwargs["batch_size"]),
             pct_start=0.1,
             anneal_strategy='cos', 
@@ -103,36 +103,20 @@ def get_lr_scheduler(optimizer, lr_config, **kwargs):
 
 
 def get_dataset_and_dataloader(config):
-
     
-    train_transforms = get_augmentation(config, _type = 'train')
-    val_transforms = get_augmentation(config, _type = 'val')
+    trainloader = CSVDataLoader(
+        root_dir = config.root_dir, 
+        csv_file = config.csv_file, 
+        image_size=config.image_size, 
+        keep_ratio=config.keep_ratio, 
+        task=config.task, _type='train')
     
-    trainset = ImageClassificationDataset(
-        config = config,
-        img_dir = os.path.join('data', config.project_name, config.train_imgs),
-        transforms=train_transforms)
-    
-    valset = ImageClassificationDataset(
-        config = config,
-        img_dir=os.path.join('data', config.project_name, config.val_imgs), 
-        transforms=val_transforms)
+    valloader = CSVDataLoader(
+        root_dir = config.root_dir, 
+        csv_file = config.csv_file, 
+        image_size=config.image_size, 
+        keep_ratio=config.keep_ratio, 
+        task=config.task, _type='val')
 
-    trainloader = DataLoader(
-        trainset, 
-        batch_size=config.batch_size, 
-        shuffle = True, 
-        collate_fn=trainset.collate_fn, 
-        num_workers= config.num_workers, 
-        pin_memory=True)
-
-    valloader = DataLoader(
-        valset, 
-        batch_size=config.batch_size, 
-        shuffle = False,
-        collate_fn=valset.collate_fn, 
-        num_workers= config.num_workers, 
-        pin_memory=True)
-
-    return  trainset, valset, trainloader, valloader
+    return  trainloader.dataset, valloader.dataset, trainloader, valloader
 
