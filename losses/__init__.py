@@ -9,3 +9,5 @@ def get_loss(name):
         return smoothCELoss()
     if name == 'ce':
         return nn.CrossEntropyLoss()
+    if name == 'bce':
+        return nn.BCEWithLogitsLoss()
