@@ -8,7 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import albumentations as A
-from augmentations import get_augmentation, get_resize_augmentation
+from augmentations import get_augmentation, get_resize_augmentation, Denormalize
 
 
 class CSVDataset(data.Dataset):
@@ -25,10 +25,9 @@ class CSVDataset(data.Dataset):
         self.csv_file = csv_file
         self.task = task
 
-        self.transforms = A.Compose([
-            get_resize_augmentation(image_size, keep_ratio=keep_ratio),
-            get_augmentation(_type=type)
-        ])
+        self.resize_transforms = get_resize_augmentation(image_size, keep_ratio=keep_ratio)
+        self.transforms = get_augmentation(_type=_type)
+        
 
         self.fns, self.classes = self.load_data()
 
@@ -46,15 +45,13 @@ class CSVDataset(data.Dataset):
         colnames = [i for i in colnames if i.split('.')[0]==self.task]
         labels = [i.split(':')[1].rstrip().lstrip().lower() for i in colnames]
 
-        colnames = colnames.append('id')
+        colnames.append('id')
         df = df[colnames]
 
         for _, row in df.iterrows():
             lst = row.tolist()
             image_name = lst[-1]
             classes = lst[:-1]
-
-
             fns.append((image_name, classes))
 
         return fns, labels
@@ -65,10 +62,10 @@ class CSVDataset(data.Dataset):
         fns = []
 
         colnames = list(df.columns)
-        colnames = [i for i in colnames if i.split('.')[0]=='T1']
+        colnames = [i for i in colnames if i=='T1']
         labels = ['negative', 'positive']
         
-        colnames = colnames.append('id')
+        colnames.append('id')
         df = df[colnames]
 
         for _, row in df.iterrows():
@@ -86,17 +83,21 @@ class CSVDataset(data.Dataset):
     def load_image(self, image_id):
         img_path = os.path.join(self.root_dir, image_id+'.jpg')
         ori_img = cv2.imread(img_path)
-        img = cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB)
-        img = img.astype(np.uint8)
+        img = cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB).astype(np.float32)
+        img /= 255.0
         if self.transforms:
-            item = self.transforms(image=img)
-            img = item['image']
+            img = self.resize_transforms(image=img)['image']
+            img = self.transforms(image=img)['image']
         return img, ori_img
 
     def __getitem__(self, index):
         image_id, label = self.fns[index]
         img, ori_img = self.load_image(image_id)
-        label  = torch.LongTensor([label])
+
+        if not isinstance(label, list):
+            label  = torch.LongTensor([label])
+        else:
+            label  = torch.LongTensor(label)
 
         return {
             "img" : img,
@@ -113,6 +114,52 @@ class CSVDataset(data.Dataset):
             'imgs': imgs,
             'targets': targets
         }
+
+    def visualize_item(self, index = None, figsize=(15,15)):
+        """
+        Visualize an image with its bouding boxes by index
+        """
+
+        if index is None:
+            index = np.random.randint(0,len(self.fns))
+        item = self.__getitem__(index)
+        img = item['img']
+        label = item['target']
+
+        # Denormalize and reverse-tensorize
+        normalize = False
+        if self.transforms is not None:
+            for x in self.transforms.transforms:
+                if isinstance(x, A.Normalize):
+                    normalize = True
+                    denormalize = Denormalize(mean=x.mean, std=x.std)
+
+        # Denormalize and reverse-tensorize
+        if normalize:
+            img = denormalize(img = img)
+
+        label = label.numpy()
+        self.visualize(img, label, figsize = figsize)
+
+    
+    def visualize(self, img, label, figsize=(15,15)):
+        """
+        Visualize an image with its bouding boxes
+        """
+        fig,ax = plt.subplots(figsize=figsize)
+
+        if isinstance(img, torch.Tensor):
+            img = img.numpy().squeeze().transpose((1,2,0))
+            
+        # Display the image
+        ax.imshow(img)
+        if self.task == 'T1':
+            plt.title(self.classes[int(label)])
+        else:
+            title = [self.classes[int(i)] for i, l in enumerate(label) if l==1]
+            title = ' '.join(title)
+            plt.title(title)
+        plt.show()
 
     def count_dict(self):
         """
