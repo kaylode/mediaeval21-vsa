@@ -207,8 +207,8 @@ class Trainer():
         self.logging(log_dict, step=self.epoch)
 
         # Save model gives best mAP score
-        if metric_dict['acc'] > self.best_value:
-            self.best_value = metric_dict['acc']
+        if metric_dict['f1-score'] > self.best_value:
+            self.best_value = metric_dict['f1-score']
             self.checkpoint.save(
                 self.model,
                 save_mode='best',
