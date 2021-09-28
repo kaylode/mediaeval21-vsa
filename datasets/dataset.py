@@ -7,23 +7,28 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import albumentations as A
+from augmentations import get_augmentation, get_resize_augmentation
 
 
 class CSVDataset(data.Dataset):
     """
     - Reads a CSV file. Requires first column to be text data, second column to be labels.
     - Arguments:
-    id,T1,T2.1: Joy,T2.2: Sadness,T2.3: Fear,T2.4: Disgust,T2.5: Anger,T2.6: Surprise,T2.7: Neutral,T3.1: Anger,T3.2: Anxiety,T3.3: Craving,T3.4: Emphatic pain,T3.5: Fear,T3.6: Horror,T3.7: Joy,T3.8: Relief,T3.9: Sadness,T3.10:surprise
-    bfe3ffeb-f7ef-4099-92a2-bf91979485f0,negative,0,1,1,0,0,0,0,1,1,0,0,1,0,0,0,1,0           
-
+   
     """
     
-    def __init__(self, root_dir, csv_file, task='T1'):
+    def __init__(self, root_dir, csv_file, image_size, keep_ratio, task='T1', _type='train'):
         super().__init__()
 
         self.root_dir = root_dir
         self.csv_file = csv_file
         self.task = task
+
+        self.transforms = A.Compose([
+            get_resize_augmentation(image_size, keep_ratio=keep_ratio),
+            get_augmentation(_type=type)
+        ])
 
         self.fns, self.classes = self.load_data()
 
@@ -102,7 +107,7 @@ class CSVDataset(data.Dataset):
         ori_imgs = [s['ori_img'] for s in batch]
         imgs = [s['img'] for s in batch]
         targets = torch.stack([s['target'] for s in batch])
-        
+
         return {
             'ori_imgs': ori_imgs,
             'imgs': imgs,
