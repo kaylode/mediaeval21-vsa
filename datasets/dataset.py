@@ -30,6 +30,7 @@ class CSVDataset(data.Dataset):
         
 
         self.fns, self.classes = self.load_data()
+        self.num_classes = len(self.classes)
 
     def load_data(self):
         if self.task == 'T1':
@@ -93,7 +94,6 @@ class CSVDataset(data.Dataset):
     def __getitem__(self, index):
         image_id, label = self.fns[index]
         img, ori_img = self.load_image(image_id)
-
         if not isinstance(label, list):
             label  = torch.LongTensor([label])
         else:
@@ -106,8 +106,11 @@ class CSVDataset(data.Dataset):
 
     def collate_fn(self, batch):
         ori_imgs = [s['ori_img'] for s in batch]
-        imgs = [s['img'] for s in batch]
+        imgs = torch.stack([s['img'] for s in batch])
         targets = torch.stack([s['target'] for s in batch])
+
+        if self.task != 'T1':
+            targets = targets.float()
 
         return {
             'ori_imgs': ori_imgs,
