@@ -11,9 +11,9 @@ class CSVDataLoader(data.DataLoader):
             keep_ratio=keep_ratio,
             task=task, _type=_type)
 
-        self.collate_fn = self.dataset.collate_fn
 
         super(CSVDataLoader, self).__init__(
             self.dataset,
             batch_size=batch_size,
+            collate_fn = self.dataset.collate_fn
         )
