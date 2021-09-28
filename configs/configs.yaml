@@ -1,15 +1,14 @@
 settings:
   #################   DATASET CONFIG   ###################
 
-  project_name: ""    # also the folder name of the dataset that under ./data folder
-  train_imgs: train
-  val_imgs: val
-  test_imgs: test
+  root_dir: "/content/main/data/visualsentiment/images"
+  csv_file: "/content/main/data/visualsentiment/annotations.csv"
+  task: "T1"
   
   #################   TRAINING CONFIG   ###################
   
-  model_name: 'efficientnet_b6' #[]
-  loss_fn: 'ce' #[ce | focal]
+  model_name: 'efficientnet_b4' #[]
+  loss_fn: 'bce' #[ce | focal]
 
   # pretrained_backbone: ''                  # Pretrained backbone
   
@@ -18,7 +17,7 @@ settings:
   batch_size: 32
   num_workers: 2
   
-  image_size: [512,512]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
+  image_size: [300,300]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
   keep_ratio: False                     # whether to use resize padding
 
   mixup: True
@@ -35,8 +34,8 @@ settings:
                                         # if need to specify more scheduler arguments, do it here
 
   # gradient accumulation
-  mixed_precision: True                # whether to use nvidia apex
-  total_accumulate_steps: 64           # step * batch_size, not use if equal 0
+  mixed_precision: False                # whether to use nvidia apex
+  total_accumulate_steps: 0           # step * batch_size, not use if equal 0
 
   # Test time augmentation
   tta: False                             # whether to use TTA while validation
