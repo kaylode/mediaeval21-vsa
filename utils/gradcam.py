@@ -157,8 +157,9 @@ class GradCam:
             if target_category == None:
                 target_category = F.sigmoid(output).cpu().data.numpy()
             one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
-            temp = target_category>0.5
-            one_hot[temp] = 1
+            target_category = target_category>0.5
+            target_category = target_category[0]
+            one_hot[0][target_category] = 1
 
         one_hot = torch.from_numpy(one_hot).requires_grad_(True)
         one_hot = one_hot.cuda()
