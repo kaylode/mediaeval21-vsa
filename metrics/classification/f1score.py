@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 from sklearn.metrics import f1_score
 
@@ -22,6 +23,8 @@ class F1ScoreMetric():
     def compute(self): 
         self.targets = np.concatenate(self.targets)
         self.preds = np.concatenate(self.preds)
+        self.preds = F.sigmoid(torch.from_numpy(self.preds))
+        self.preds = self.preds.numpy()
         self.preds = self.preds > self.multilabel_threshold
         self.preds = self.preds.astype(np.int)
         return f1_score(self.targets, self.preds, average=self.average)

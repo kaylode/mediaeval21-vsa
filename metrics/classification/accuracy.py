@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import numpy as np
 
 def compute_multiclass(output, target):
@@ -7,9 +8,10 @@ def compute_multiclass(output, target):
     sample_size = output.size(0)
     return correct, sample_size
 
-def compute_multilabel(output, target, thresh=0.7):
+def compute_multilabel(output, target, thresh=0.5):
+    output = F.sigmoid(output)
     preds = output > thresh
-    preds = preds.astype(np.int)
+    preds = preds.long()
     correct = (preds == target)
     results = 0
     for i in correct:
@@ -45,11 +47,11 @@ class AccuracyMetric():
 
     def update(self,  outputs, targets):
         assert isinstance(outputs, torch.Tensor), "Please input tensors"
-        outputs = outputs.squeeze().cpu().numpy()
-        targets = targets.cpu().numpy()
-        value = self.compute(outputs, targets)
-        self.correct += value[0]
-        self.sample_size += value[1]
+        outputs = outputs.squeeze().cpu()
+        targets = targets.cpu()
+        results, sample_size = self.compute(outputs, targets)
+        self.correct += results.numpy()
+        self.sample_size += sample_size
 
     def reset(self):
         self.correct = 0.0
