@@ -3,7 +3,7 @@ settings:
 
   root_dir: "/content/main/data/visualsentiment/images"
   csv_file: "/content/main/data/visualsentiment/annotations.csv"
-  task: "T3"
+  task: "T2"
   
   #################   TRAINING CONFIG   ###################
   
@@ -17,7 +17,7 @@ settings:
   batch_size: 32
   num_workers: 2
   
-  image_size: [384,384]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
+  image_size: [300,300]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
   keep_ratio: False                     # whether to use resize padding
 
   mixup: True
