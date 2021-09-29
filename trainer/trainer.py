@@ -239,9 +239,9 @@ class Trainer():
         config_name = self.cfg.model_name.split('_')[0]
         grad_cam = GradCam(model=self.model.model, config_name=config_name)
 
-        for idx, inputs, label in enumerate(zip(images,targets)):
+        for idx, (inputs, label) in enumerate(zip(images,targets)):
             image_outname = os.path.join(
-                'samples', f'{self.epoch}_{self.iters}_{idx}.jpg')
+                'samples', f'{idx}.jpg')
             img_show = denom(inputs)
             inputs = inputs.unsqueeze(0)
             inputs = inputs.to(self.model.device)
@@ -249,7 +249,7 @@ class Trainer():
             grayscale_cam, label_idx = grad_cam(inputs, target_category)
             
 
-            if self.task == 'T1':
+            if self.valloader.dataset.task == 'T1':
                 label_str = self.valloader.dataset.classes[int(label)]
             else:
                 label_str = [self.valloader.dataset.classes[int(i)] for i, l in enumerate(label) if l==1]
@@ -259,7 +259,7 @@ class Trainer():
             img_cam = draw_image_gradcam(img_show, grayscale_cam, label_str)
             
             self.logger.write_image(
-                f'samples/{self.epoch}_{self.iters}_{idx}', img_cam, step=self.epoch)
+                image_outname, img_cam, step=self.epoch)
 
     def logging(self, logs, step):
         tags = [l for l in logs.keys()]
