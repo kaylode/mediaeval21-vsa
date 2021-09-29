@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 import numpy as np
 
 def compute_multiclass(output, target):
@@ -9,7 +8,7 @@ def compute_multiclass(output, target):
     return correct, sample_size
 
 def compute_multilabel(output, target, thresh=0.5):
-    output = F.sigmoid(output)
+    output = torch.sigmoid(output)
     preds = output > thresh
     preds = preds.long()
     correct = (preds == target)
