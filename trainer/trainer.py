@@ -222,6 +222,9 @@ class Trainer():
             self.visualize_batch()
 
     def visualize_batch(self):
+
+        from utils.utils import draw_image_gradcam
+
         # Vizualize Grad Class Activation Mapping
         if not os.path.exists('./samples'):
             os.mkdir('./samples')
@@ -229,13 +232,14 @@ class Trainer():
         denom = Denormalize()
         batch = next(iter(self.valloader))
         images = batch["imgs"]
+        targets = batch["targets"]
 
         self.model.eval()
 
         config_name = self.cfg.model_name.split('_')[0]
         grad_cam = GradCam(model=self.model.model, config_name=config_name)
 
-        for idx, inputs in enumerate(images):
+        for idx, inputs, label in enumerate(zip(images,targets)):
             image_outname = os.path.join(
                 'samples', f'{self.epoch}_{self.iters}_{idx}.jpg')
             img_show = denom(inputs)
@@ -243,17 +247,19 @@ class Trainer():
             inputs = inputs.to(self.model.device)
             target_category = None
             grayscale_cam, label_idx = grad_cam(inputs, target_category)
-            label = self.cfg.obj_list[label_idx]
-            img_cam = show_cam_on_image(img_show, grayscale_cam, label)
-            cv2.imwrite(image_outname, img_cam)
+            
 
-        img_cam = cv2.cvtColor(img_cam, cv2.COLOR_BGR2RGB)
-        
-        fig_cam = plt.figure()
-        plt.imshow(img_cam)
+            if self.task == 'T1':
+                label_str = self.valloader.dataset.classes[int(label)]
+            else:
+                label_str = [self.valloader.dataset.classes[int(i)] for i, l in enumerate(label) if l==1]
+                label_str = ' '.join(label_str)
 
-        self.logger.write_image(
-            f'samples/{self.epoch}_{self.iters}_{idx}', fig_cam, step=self.epoch)
+
+            img_cam = draw_image_gradcam(img_show, grayscale_cam, label_str)
+            
+            self.logger.write_image(
+                f'samples/{self.epoch}_{self.iters}_{idx}', img_cam, step=self.epoch)
 
     def logging(self, logs, step):
         tags = [l for l in logs.keys()]
