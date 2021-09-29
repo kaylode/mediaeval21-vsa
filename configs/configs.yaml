@@ -7,7 +7,7 @@ settings:
   
   #################   TRAINING CONFIG   ###################
   
-  model_name: 'efficientnet_b4' #[]
+  model_name: 'efficientnet_b4' #[vit_base_patch16_384]
   loss_fn: 'bce' #[ce | focal]
 
   # pretrained_backbone: ''                  # Pretrained backbone
