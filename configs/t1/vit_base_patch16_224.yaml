@@ -7,17 +7,17 @@ settings:
   
   #################   TRAINING CONFIG   ###################
   
-  model_name: 'vit_base_patch16_384' #[vit_base_patch16_384]
+  model_name: 'vit_base_patch16_224' #[vit_base_patch16_384]
   loss_fn: 'ce' #[ce | focal]
 
   # pretrained_backbone: ''                  # Pretrained backbone
   
   gpu_devices: '0'                     # supports multi-gpus
   num_epochs: 100
-  batch_size: 8
+  batch_size: 32
   num_workers: 2
   
-  image_size: [384,384]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
+  image_size: [224,224]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
   keep_ratio: False                     # whether to use resize padding
 
   mixup: True
