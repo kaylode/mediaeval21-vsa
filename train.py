@@ -100,6 +100,7 @@ def train(args, config):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Training EfficientDet')
+    parser.add_argument('--config', type=str, default="./configs/configs.yaml", help='Config file')
     parser.add_argument('--print_per_iter', type=int, default=300, help='Number of iteration to print')
     parser.add_argument('--val_interval', type=int, default=2, help='Number of epoches between valing phases')
     parser.add_argument('--gradcam_visualization', action='store_true', help='whether to visualize box to ./sample when validating (for debug), default=off')
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     parser.add_argument('--freeze_backbone', action='store_true', help='whether to freeze the backbone')
     
     args = parser.parse_args()
-    config = Config(os.path.join('configs','configs.yaml'))
+    config = Config(args.config)
 
     train(args, config)
     
