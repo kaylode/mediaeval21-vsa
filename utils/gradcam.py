@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import os
 from torch.autograd import Function
+import torch.nn.functional as F
 from torchvision import models, transforms
 from configs import *
 import matplotlib.pyplot as plt
@@ -116,7 +117,8 @@ class ModelOutputs():
 
 
 class GradCam:
-    def __init__(self, model, config_name):
+    def __init__(self, model, config_name, types='multiclass'):
+        self.types = types
         self.config_name = config_name
         self.model = model.model
         self.feature_module_config = configs[config_name]["feature_module"]
@@ -143,16 +145,23 @@ class GradCam:
 
     def __call__(self, input_img, target_category=None):
         features, output = self.extractor(input_img)
+                 
+        if self.types == 'multiclass':  
+            if target_category == None:
+                target_category = np.argmax(output.cpu().data.numpy())
+            one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
+            one_hot[0][target_category] = 1
+            
+        
+        if self.types == 'multilabel':
+            if target_category == None:
+                target_category = F.sigmoid(output).cpu().data.numpy()
+            one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
+            temp = target_category>0.5
+            one_hot[temp] = 1
 
-        if target_category == None:
-            target_category = np.argmax(output.cpu().data.numpy())
-
-        one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
-        one_hot[0][target_category] = 1
         one_hot = torch.from_numpy(one_hot).requires_grad_(True)
-
         one_hot = one_hot.cuda()
-
         one_hot = torch.sum(one_hot * output)
 
         self.feature_module.zero_grad()
@@ -174,7 +183,7 @@ class GradCam:
         cam = cv2.resize(cam, input_img.shape[2:])
         cam = cam - np.min(cam)
         cam = cam / np.max(cam)
-        return cam, int(target_category)
+        return cam, target_category
 
 
 def main(args, config):

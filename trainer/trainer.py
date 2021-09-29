@@ -237,26 +237,33 @@ class Trainer():
         self.model.eval()
 
         config_name = self.cfg.model_name.split('_')[0]
-        grad_cam = GradCam(model=self.model.model, config_name=config_name)
+        grad_cam = GradCam(model=self.model.model, config_name=config_name, types='multilabel')
 
-        for idx, (inputs, label) in enumerate(zip(images,targets)):
+        for idx, (inputs, target) in enumerate(zip(images,targets)):
             image_outname = os.path.join(
                 'samples', f'{idx}.jpg')
             img_show = denom(inputs)
             inputs = inputs.unsqueeze(0)
             inputs = inputs.to(self.model.device)
             target_category = None
-            grayscale_cam, label_idx = grad_cam(inputs, target_category)
+            grayscale_cam, pred = grad_cam(inputs, target_category)
             
 
             if self.valloader.dataset.task == 'T1':
-                label_str = self.valloader.dataset.classes[int(label)]
+                label_str = self.valloader.dataset.classes[int(target)]
+                pred_str = self.valloader.dataset.classes[int(pred)]
+                output_str = '\n'.join(['Pred: '+pred_str, 'Target: '+label_str])
             else:
-                label_str = [self.valloader.dataset.classes[int(i)] for i, l in enumerate(label) if l==1]
-                label_str = ' '.join(label_str)
+                label_str = [self.valloader.dataset.classes[int(i)] for i, l in enumerate(target) if l==1]
+                pred_str = [self.valloader.dataset.classes[int(i)] for i, l in enumerate(pred) if l==1]
+
+                label_str = ', '.join(label_str)
+                pred_str = ', '.join(pred_str)
+
+                output_str = '\n'.join(['Pred: '+pred_str, 'Target: '+label_str])
 
 
-            img_cam = draw_image_gradcam(img_show, grayscale_cam, label_str)
+            img_cam = draw_image_gradcam(img_show, grayscale_cam, output_str)
             
             self.logger.write_image(
                 image_outname, img_cam, step=self.epoch)
