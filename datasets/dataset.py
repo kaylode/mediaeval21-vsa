@@ -49,6 +49,16 @@ class CSVDataset(data.Dataset):
         colnames.append('id')
         df = df[colnames]
 
+        if self.task == 'T2':
+            df2 = df[["T2.1: Joy","T2.2: Sadness","T2.3: Fear","T2.4: Disgust","T2.5: Anger","T2.6: Surprise","T2.7: Neutral"]]
+            df2['sum'] = df2.sum(axis=1)
+            df = df[df2['sum']!=0]
+
+        if self.task == 'T3':
+            df3 = df[["T3.1: Anger","T3.2: Anxiety","T3.3: Craving","T3.4: Emphatic pain","T3.5: Fear","T3.6: Horror","T3.7: Joy","T3.8: Relief","T3.9: Sadness","T3.10:surprise"]]
+            df3['sum'] = df3.sum(axis=1)
+            df = df[df3['sum']!=0]
+
         for _, row in df.iterrows():
             lst = row.tolist()
             image_name = lst[-1]
