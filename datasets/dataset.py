@@ -64,7 +64,7 @@ class CSVDataset(data.Dataset):
 
         colnames = list(df.columns)
         colnames = [i for i in colnames if i=='T1']
-        labels = ['negative', 'positive']
+        labels = ['neutral', 'negative', 'positive']
         
         colnames.append('id')
         df = df[colnames]
@@ -74,6 +74,8 @@ class CSVDataset(data.Dataset):
             image_name = lst[-1]
             classes = lst[0]
             if classes == 'positive':
+                classes = 2
+            elif classes == 'negative':
                 classes = 1
             else:
                 classes = 0
