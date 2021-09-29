@@ -106,7 +106,7 @@ def get_dataset_and_dataloader(config):
     
     trainloader = CSVDataLoader(
         root_dir = config.root_dir, 
-        csv_file = config.csv_file, 
+        csv_file = config.train_csv, 
         image_size=config.image_size, 
         keep_ratio=config.keep_ratio, 
         batch_size=config.batch_size,
@@ -114,7 +114,7 @@ def get_dataset_and_dataloader(config):
     
     valloader = CSVDataLoader(
         root_dir = config.root_dir, 
-        csv_file = config.csv_file, 
+        csv_file = config.val_csv, 
         image_size=config.image_size, 
         keep_ratio=config.keep_ratio, 
         batch_size=config.batch_size,

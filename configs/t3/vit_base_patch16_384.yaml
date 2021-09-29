@@ -2,7 +2,8 @@ settings:
   #################   DATASET CONFIG   ###################
 
   root_dir: "/content/main/data/visualsentiment/images"
-  csv_file: "/content/main/data/visualsentiment/annotations.csv"
+  train_csv: "/content/main/data/visualsentiment/train.csv"
+  val_csv: "/content/main/data/visualsentiment/val.csv"
   task: "T3"
   
   #################   TRAINING CONFIG   ###################
