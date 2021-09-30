@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from sklearn.metrics import f1_score
 
-def postprocess_multilabel(tensor, threshold):
+def postprocess_multilabel(tensor, threshold=0.5):
     tensor = torch.sigmoid(torch.from_numpy(tensor))
     tensor = tensor.numpy()
     tensor = tensor > threshold
