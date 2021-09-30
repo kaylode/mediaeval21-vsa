@@ -28,11 +28,17 @@ def train(args, config):
     # else:
     #     config.tta = None
 
+    if config.task == 'T1':
+        metric_type = 'multiclass'
+    else:
+        metric_type = 'multilabel'
+
+
     metric = [
-        AccuracyMetric(types='multilabel'),
+        AccuracyMetric(types=metric_type),
         # BalancedAccuracyMetric(num_classes=trainset.num_classes), 
         # ConfusionMatrix(trainset.classes), 
-        F1ScoreMetric()
+        F1ScoreMetric(types=metric_type)
     ]
 
     criterion = get_loss(config.loss_fn)

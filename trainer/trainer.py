@@ -237,7 +237,12 @@ class Trainer():
         self.model.eval()
 
         config_name = self.cfg.model_name.split('_')[0]
-        grad_cam = GradCam(model=self.model.model, config_name=config_name, types='multilabel')
+        if self.valloader.dataset.task == 'T1':
+            types = "multiclass"
+        else:
+            types = "multilabel"
+
+        grad_cam = GradCam(model=self.model.model, config_name=config_name, types=types)
 
         for idx, (inputs, target) in enumerate(zip(images,targets)):
             image_outname = os.path.join(
