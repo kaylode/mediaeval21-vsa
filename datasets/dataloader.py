@@ -28,11 +28,16 @@ class CSVDataLoader(data.DataLoader):
         else:
             sampler = None
 
+        if _type == 'train':
+            drop_last = True
+        else:
+            drop_last = False
+            
         super(CSVDataLoader, self).__init__(
             self.dataset,
             batch_size=batch_size,
             collate_fn = self.dataset.collate_fn,
-            drop_last=True, 
+            drop_last=drop_last, 
             sampler=sampler
         )
 
