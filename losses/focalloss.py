@@ -1,32 +1,18 @@
 import torch
 import torch.nn as nn
-import numpy as np
+import torch.nn.functional as F
+from torch.autograd import Variable
 
 
-class FocalLoss(nn.Module):
-    """
-    Focal Loss
-    Source: https://github.com/mathiaszinnen/focal_loss_torch
-    """
-    def __init__(self, alpha=0.25, gamma=2, reduction: str = 'mean'):
-        super().__init__()
-        if reduction not in ['mean', 'none', 'sum']:
-            raise NotImplementedError('Reduction {} not implemented.'.format(reduction))
-        self.reduction = reduction
-        self.alpha = alpha
+class FocalLoss(nn.modules.loss._WeightedLoss):
+    def __init__(self, weight=None, gamma=2,reduction='mean'):
+        super(FocalLoss, self).__init__(weight,reduction=reduction)
         self.gamma = gamma
+        self.weight = weight #weight parameter will act as the alpha parameter to balance class weights
 
-    def forward(self, x, target):
-        eps = np.finfo(float).eps
-        p_t = torch.where(target == 1, x, 1-x)
-        fl = - 1 * (1 - p_t) ** self.gamma * torch.log(p_t + eps)
-        fl = torch.where(target == 1, fl * self.alpha, fl * (1 - self.alpha))
-        return self._reduce(fl)
+    def forward(self, input, target):
 
-    def _reduce(self, x):
-        if self.reduction == 'mean':
-            return x.mean()
-        elif self.reduction == 'sum':
-            return x.sum()
-        else:
-            return x
+        ce_loss = F.cross_entropy(input, target,reduction=self.reduction,weight=self.weight) 
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1 - pt) ** self.gamma * ce_loss).mean()
+        return focal_loss
