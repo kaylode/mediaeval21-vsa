@@ -65,7 +65,7 @@ Please submit your runs for the task in the form of a csv file, where each line 
 </details>
 
 ## Notebooks
-- Extract Face Embeddings using MTCNN. [![Notebook](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1PNl2-q4RKnSPwj7qvGzM5HT2qHa8uvHH?usp=sharing)
+- Extract Face Embeddings using MTCNN. [![Notebook](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1n2yVITUdTzNXHvAdPgpbYjVgh8zXDEg6?usp=sharing)
 
 ## References
 
