@@ -1,21 +1,32 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+import numpy as np
 
-class WeightedFocalLoss(nn.Module):
+
+class FocalLoss(nn.Module):
     """
-    Non weighted version of Focal Loss
-    Source: https://amaarora.github.io/2020/06/29/FocalLoss.html
+    Focal Loss
+    Source: https://github.com/mathiaszinnen/focal_loss_torch
     """
-    def __init__(self, alpha=.25, gamma=2):
-        super(WeightedFocalLoss, self).__init__()
-        self.alpha = torch.tensor([alpha, 1-alpha]).cuda()
+    def __init__(self, alpha=0.25, gamma=2, reduction: str = 'mean'):
+        super().__init__()
+        if reduction not in ['mean', 'none', 'sum']:
+            raise NotImplementedError('Reduction {} not implemented.'.format(reduction))
+        self.reduction = reduction
+        self.alpha = alpha
         self.gamma = gamma
 
-    def forward(self, inputs, targets):
-        BCE_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
-        targets = targets.type(torch.long)
-        at = self.alpha.gather(0, targets.data.view(-1))
-        pt = torch.exp(-BCE_loss)
-        F_loss = at*(1-pt)**self.gamma * BCE_loss
-        return F_loss.mean()
+    def forward(self, x, target):
+        eps = np.finfo(float).eps
+        p_t = torch.where(target == 1, x, 1-x)
+        fl = - 1 * (1 - p_t) ** self.gamma * torch.log(p_t + eps)
+        fl = torch.where(target == 1, fl * self.alpha, fl * (1 - self.alpha))
+        return self._reduce(fl)
+
+    def _reduce(self, x):
+        if self.reduction == 'mean':
+            return x.mean()
+        elif self.reduction == 'sum':
+            return x.sum()
+        else:
+            return x
