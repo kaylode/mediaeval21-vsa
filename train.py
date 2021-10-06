@@ -41,6 +41,12 @@ def train(args, config):
         F1ScoreMetric(types=metric_type)
     ]
 
+    if config.task == 'T1':
+        metric.extend([
+            BalancedAccuracyMetric(num_classes=trainset.num_classes), 
+            ConfusionMatrix(trainset.classes), 
+        ])
+
     criterion = get_loss(config.loss_fn)
     optimizer, optimizer_params = get_lr_policy(config.lr_policy)
 
