@@ -2,13 +2,13 @@ settings:
   #################   DATASET CONFIG   ###################
 
   root_dir: "/content/main/data/visualsentiment/images"
-  train_csv: "/content/main/data/visualsentiment/train.csv"
-  val_csv: "/content/main/data/visualsentiment/val.csv"
+  train_csv: "/content/main/data/task1/task1_train_fold0.csv"
+  val_csv: "/content/main/data/task1/task1_val_fold0.csv"
   task: "T1"
   
   #################   TRAINING CONFIG   ###################
   
-  model_name: 'vit_base_patch16_224' #[vit_base_patch16_384]
+  model_name: 'tf_efficientnet_b4' #[vit_base_patch16_384]
   loss_fn: 'ce' #[ce | focal]
 
   # pretrained_backbone: ''                  # Pretrained backbone
@@ -18,7 +18,7 @@ settings:
   batch_size: 32
   num_workers: 2
   
-  image_size: [224,224]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
+  image_size: [380,380]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
   keep_ratio: False                     # whether to use resize padding
 
   mixup: True
@@ -31,12 +31,12 @@ settings:
     weight_decay: 0.0005
 
   lr_scheduler:
-    name: "1cycle-yolo"                      #[plateau | cosine | 1cycle-yolo | 1cycle]
+    name: "cosine2"                      #[plateau | cosine | 1cycle-yolo | 1cycle]
                                         # if need to specify more scheduler arguments, do it here
 
   # gradient accumulation
   mixed_precision: False                # whether to use nvidia apex
-  total_accumulate_steps: 0           # step * batch_size, not use if equal 0
+  total_accumulate_steps: 64           # step * batch_size, not use if equal 0
 
   # Test time augmentation
   tta: False                             # whether to use TTA while validation
