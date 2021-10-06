@@ -1,10 +1,10 @@
-from .focalloss import FocalLoss
+from .focalloss import WeightedFocalLoss
 from .smoothceloss import smoothCELoss
 import torch.nn as nn
 
 def get_loss(name):
     if name == 'focal':
-        return FocalLoss()
+        return WeightedFocalLoss()
     if name == 'smoothce':
         return smoothCELoss()
     if name == 'ce':
