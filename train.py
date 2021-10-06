@@ -62,6 +62,7 @@ def train(args, config):
         
     scheduler, step_per_epoch = get_lr_scheduler(
         model.optimizer, 
+        train_len=len(trainloader),
         lr_config=config.lr_scheduler,
         num_epochs=config.num_epochs)
 
