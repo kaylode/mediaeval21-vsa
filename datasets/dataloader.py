@@ -15,5 +15,7 @@ class CSVDataLoader(data.DataLoader):
         super(CSVDataLoader, self).__init__(
             self.dataset,
             batch_size=batch_size,
-            collate_fn = self.dataset.collate_fn
+            collate_fn = self.dataset.collate_fn,
+            shuffle=True,
+            drop_last=True
         )
