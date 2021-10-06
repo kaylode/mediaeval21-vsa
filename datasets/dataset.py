@@ -69,6 +69,7 @@ class CSVDataset(data.Dataset):
 
 
     def load_data_t1(self):
+        self.classes_dist = []
         df = pd.read_csv(self.csv_file)
         fns = []
 
@@ -90,7 +91,8 @@ class CSVDataset(data.Dataset):
             else:
                 classes = 0
             fns.append((image_name, classes))
-
+            self.classes_dist.append(classes)
+            
         return fns, labels
     
     def load_image(self, image_id):

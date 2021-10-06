@@ -1,6 +1,17 @@
+import torch
 import torch.utils.data as data
-from .dataset import CSVDataset
 
+import numpy as np
+from .dataset import CSVDataset
+from torch.utils.data.sampler import WeightedRandomSampler
+
+def class_imbalance_sampler(labels):
+    class_count = torch.bincount(labels.squeeze())
+    class_weighting = 1. / class_count
+    sample_weights = np.array([class_weighting[t] for t in labels.squeeze()])
+    sample_weights = torch.from_numpy(sample_weights)
+    sampler = WeightedRandomSampler(sample_weights, len(sample_weights))
+    return sampler
 
 class CSVDataLoader(data.DataLoader):
     def __init__(self, root_dir, csv_file, image_size, keep_ratio, task, batch_size,  _type='train'):
@@ -11,11 +22,21 @@ class CSVDataLoader(data.DataLoader):
             keep_ratio=keep_ratio,
             task=task, _type=_type)
 
+        if task == 'T1' and _type == 'train':
+            labels = torch.LongTensor(self.dataset.classes_dist).unsqueeze(1)
+            sampler = class_imbalance_sampler(labels)
+        else:
+            sampler = None
 
         super(CSVDataLoader, self).__init__(
             self.dataset,
             batch_size=batch_size,
             collate_fn = self.dataset.collate_fn,
-            shuffle=True,
-            drop_last=True
+            drop_last=True, 
+            sampler=sampler
         )
+
+
+
+
+
