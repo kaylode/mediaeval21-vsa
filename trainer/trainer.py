@@ -299,6 +299,8 @@ class Trainer():
         return "\n".join([s0, s1, s2, s5, s6])
 
     def set_attribute(self, kwargs):
+        self.epoch = 0
+        self.num_epochs = 0
         self.checkpoint = None
         self.scheduler = None
         self.clip_grad = 10.0
