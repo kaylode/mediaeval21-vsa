@@ -8,7 +8,7 @@ settings:
   
   #################   TRAINING CONFIG   ###################
   
-  model_name: 'tf_efficientnetv2_l_in21ft1k' #[vit_base_patch16_384]
+  model_name: 'tf_efficientnetv2_m_in21ft1k' #[vit_base_patch16_384]
   loss_fn: 'ce' #[ce | focal]
 
   # pretrained_backbone: ''                  # Pretrained backbone
