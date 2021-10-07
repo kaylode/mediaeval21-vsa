@@ -2,6 +2,17 @@ from utils.getter import *
 import argparse
 import os
 
+parser = argparse.ArgumentParser('Training Classification')
+parser.add_argument('--config', type=str, default="./configs/configs.yaml", help='Config file')
+parser.add_argument('--print_per_iter', type=int, default=300, help='Number of iteration to print')
+parser.add_argument('--val_interval', type=int, default=2, help='Number of epoches between valing phases')
+parser.add_argument('--gradcam_visualization', action='store_true', help='whether to visualize box to ./sample when validating (for debug), default=off')
+parser.add_argument('--save_interval', type=int, default=1000, help='Number of steps between saving')
+parser.add_argument('--resume', type=str, default=None,
+                    help='whether to load weights from a checkpoint, set None to initialize')
+parser.add_argument('--saved_path', type=str, default='./weights')
+parser.add_argument('--freeze_backbone', action='store_true', help='whether to freeze the backbone')
+  
 
 torch.backends.cudnn.benchmark = True
 torch.backends.cudnn.fastest = True
@@ -20,14 +31,6 @@ def train(args, config):
         name=config.model_name, 
         num_classes=trainset.num_classes)
 
-    # if config.tta:
-    #     config.tta = TTA(
-    #         min_conf=config.min_conf_val, 
-    #         min_iou=config.min_iou_val, 
-    #         postprocess_mode=config.tta_ensemble_mode)
-    # else:
-    #     config.tta = None
-
     if config.task == 'T1':
         metric_type = 'multiclass'
     else:
@@ -36,8 +39,6 @@ def train(args, config):
 
     metric = [
         AccuracyMetric(types=metric_type),
-        # BalancedAccuracyMetric(num_classes=trainset.num_classes), 
-        # ConfusionMatrix(trainset.classes), 
         F1ScoreMetric(types=metric_type)
     ]
 
@@ -112,17 +113,7 @@ def train(args, config):
     
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('Training EfficientDet')
-    parser.add_argument('--config', type=str, default="./configs/configs.yaml", help='Config file')
-    parser.add_argument('--print_per_iter', type=int, default=300, help='Number of iteration to print')
-    parser.add_argument('--val_interval', type=int, default=2, help='Number of epoches between valing phases')
-    parser.add_argument('--gradcam_visualization', action='store_true', help='whether to visualize box to ./sample when validating (for debug), default=off')
-    parser.add_argument('--save_interval', type=int, default=1000, help='Number of steps between saving')
-    parser.add_argument('--resume', type=str, default=None,
-                        help='whether to load weights from a checkpoint, set None to initialize')
-    parser.add_argument('--saved_path', type=str, default='./weights')
-    parser.add_argument('--freeze_backbone', action='store_true', help='whether to freeze the backbone')
-    
+     
     args = parser.parse_args()
     config = Config(args.config)
 
