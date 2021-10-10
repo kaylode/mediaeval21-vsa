@@ -27,9 +27,7 @@ def train(args, config):
     
     trainset, valset, trainloader, valloader = get_dataset_and_dataloader(config)
   
-    net = BaseTimmModel(
-        name=config.model_name, 
-        num_classes=trainset.num_classes)
+    net = get_model(config, trainset.num_classes)
 
     if config.task == 'T1':
         metric_type = 'multiclass'
