@@ -1,7 +1,8 @@
 settings:
   #################   DATASET CONFIG   ###################
 
-  root_dir: "/content/main/data/devset_2021_Visual_Sentiment/images"
+  train_imgs: "/content/main/data/devset_2021_Visual_Sentiment/images"
+  val_imgs: "/content/main/data/testset_2021_Visual_Sentiment/images"
   train_csv: "/content/main/data/clean.csv"
   val_csv: "/content/main/data/testset_mediaeval.csv"
   task: "T1"
@@ -15,7 +16,7 @@ settings:
   
   gpu_devices: '0'                     # supports multi-gpus
   num_epochs: 100
-  batch_size: 16
+  batch_size: 64
   num_workers: 2
   
   image_size: 256               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
@@ -32,8 +33,5 @@ settings:
                                         # if need to specify more scheduler arguments, do it here
 
   # gradient accumulation
-  mixed_precision: False                # whether to use nvidia apex
-  total_accumulate_steps: 64           # step * batch_size, not use if equal 0
-
-  # Test time augmentation
-  tta: False                             # whether to use TTA while validation
+  mixed_precision: True                # whether to use nvidia apex
+  total_accumulate_steps: 0           # step * batch_size, not use if equal 0

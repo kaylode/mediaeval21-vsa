@@ -7,13 +7,13 @@ import os
 from torch.autograd import Function
 import torch.nn.functional as F
 from torchvision import models, transforms
-from configs import *
+from tools.configs import *
 import matplotlib.pyplot as plt
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
-from augmentations import Denormalize
+from datasets.augmentations.transforms import Denormalize
 
-from models import BaseTimmModel
+from modules.models import BaseTimmModel
 
 
 _MEAN = (0.485, 0.456, 0.406)

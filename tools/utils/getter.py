@@ -1,9 +1,9 @@
 from datasets import *
 from modules import *
-from trainer import *
+from tools.trainer import *
 from datasets.augmentations.transforms import *
-from loggers import *
-from configs import *
+from tools.loggers import *
+from tools.configs import *
 
 
 import torch
@@ -15,7 +15,7 @@ import math
 import torchvision.models as models
 from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR, LambdaLR, ReduceLROnPlateau,OneCycleLR, CosineAnnealingWarmRestarts
-from utils.cuda import NativeScaler, get_devices_info
+from tools.utils.cuda import NativeScaler, get_devices_info
 
 from .seed import seed_everything
 
@@ -110,18 +110,16 @@ def get_lr_scheduler(optimizer, lr_config, **kwargs):
 def get_dataset_and_dataloader(config):
     
     trainloader = CSVDataLoader(
-        root_dir = config.root_dir, 
+        root_dir = config.train_imgs, 
         csv_file = config.train_csv, 
         image_size=config.image_size, 
-        keep_ratio=config.keep_ratio, 
         batch_size=config.batch_size,
         task=config.task, _type='train')
     
     valloader = CSVDataLoader(
-        root_dir = config.root_dir, 
+        root_dir = config.val_imgs, 
         csv_file = config.val_csv, 
         image_size=config.image_size, 
-        keep_ratio=config.keep_ratio, 
         batch_size=config.batch_size,
         task=config.task, _type='val')
 

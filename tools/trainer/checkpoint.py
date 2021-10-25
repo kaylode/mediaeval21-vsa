@@ -1,7 +1,7 @@
 import torch
 import os
 from datetime import datetime
-from configs import config_from_dict
+from tools.configs import config_from_dict
 
 class Checkpoint():
     """

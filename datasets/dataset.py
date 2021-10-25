@@ -34,7 +34,7 @@ class CSVDataset(data.Dataset):
         # MixUp and CutMix
         mixup_transforms = []
         mixup_transforms.append(RandomMixup(self.num_classes, p=1.0, alpha=0.2))
-        mixup_transforms.append(RandomCutmix(self.num_classes, p=1.0, alpha=0.2))
+        mixup_transforms.append(RandomCutmix(self.num_classes, p=1.0, alpha=1.0))
         self.mixupcutmix = tf.RandomChoice(mixup_transforms)
 
     def load_data(self):
@@ -124,6 +124,7 @@ class CSVDataset(data.Dataset):
         imgs = torch.stack([s['img'] for s in batch])
         targets = torch.stack([s['target'] for s in batch])
 
+        targets = targets.squeeze(1)
         if self.mixupcutmix is not None:
             imgs, targets = self.mixupcutmix(imgs, targets)
 

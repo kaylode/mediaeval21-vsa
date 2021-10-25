@@ -6,11 +6,11 @@ import torch
 from tqdm import tqdm
 from .checkpoint import Checkpoint
 import numpy as np
-from loggers.loggers import Logger
+from tools.loggers.loggers import Logger
 import time
-from utils.cuda import NativeScaler
+from tools.utils.cuda import NativeScaler
 from torch.cuda import amp
-from utils.gradcam import GradCam, show_cam_on_image
+from tools.utils.gradcam import GradCam, show_cam_on_image
 from datasets.augmentations.transforms import Denormalize
 
 

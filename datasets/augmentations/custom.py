@@ -1,3 +1,8 @@
+"""
+Source:
+https://github.com/pytorch/vision/blob/dc1139958404b27e5b1e83ca9bc381462a955e29/references/classification/transforms.py#L84
+"""
+
 import math
 from typing import Tuple
 
