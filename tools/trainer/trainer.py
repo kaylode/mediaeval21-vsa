@@ -222,7 +222,7 @@ class Trainer():
 
     def visualize_batch(self):
 
-        from utils.utils import draw_image_gradcam
+        from tools.utils.utils import draw_image_gradcam
 
         # Vizualize Grad Class Activation Mapping
         if not os.path.exists('./samples'):

@@ -3,7 +3,8 @@ import torch
 import torch.utils.data as data
 from torchvision.transforms import transforms as tf
 
-from PIL import Image
+from PIL import ImageFile, Image
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

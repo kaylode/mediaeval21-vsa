@@ -3,8 +3,8 @@ from .focalloss import FocalLoss
 
 def get_loss(name, **kwargs):
     if name == 'focal':
-        return FocalLoss()
+        return FocalLoss(**kwargs)
     if name == 'ce':
-        return nn.CrossEntropyLoss(label_smoothing=0.1)
+        return nn.CrossEntropyLoss(**kwargs)
     if name == 'bce':
         return nn.BCEWithLogitsLoss()
