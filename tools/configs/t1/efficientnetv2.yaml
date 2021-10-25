@@ -18,10 +18,7 @@ settings:
   batch_size: 16
   num_workers: 2
   
-  image_size: [384,384]               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
-  keep_ratio: False                     # whether to use resize padding
-
-  mixup: True
+  image_size: 256               # should be square to prevent bugs [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
 
   # learning rate policy
   lr_policy:
