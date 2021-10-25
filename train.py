@@ -1,4 +1,4 @@
-from utils.getter import *
+from tools.utils.getter import *
 import argparse
 import os
 
