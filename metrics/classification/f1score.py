@@ -25,7 +25,7 @@ class F1ScoreMetric():
     """
     F1 Score Metric (including macro, micro)
     """
-    def __init__(self, types="multiclass", average = 'macro'):
+    def __init__(self, types="multiclass", average = 'weighted'):
         self.average = average
         self.types = types
         self.postprocess_fn = get_postprocess_fn(types)
