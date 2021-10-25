@@ -10,4 +10,6 @@ class FocalLoss(nn.Module):
         self.alpha = alpha
 
     def forward(self, inputs, targets):
+        if len(targets.shape) == 1:
+            targets = targets.unsqueeze(1)
         return sigmoid_focal_loss(inputs, targets, self.alpha, self.gamma, self.reduction)

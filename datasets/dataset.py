@@ -31,11 +31,14 @@ class CSVDataset(data.Dataset):
         self.fns, self.classes = self.load_data()
         self.num_classes = len(self.classes)
 
-        # MixUp and CutMix
-        mixup_transforms = []
-        mixup_transforms.append(RandomMixup(self.num_classes, p=1.0, alpha=0.2))
-        mixup_transforms.append(RandomCutmix(self.num_classes, p=1.0, alpha=1.0))
-        self.mixupcutmix = tf.RandomChoice(mixup_transforms)
+        if _type == 'train':
+            # MixUp and CutMix
+            mixup_transforms = []
+            mixup_transforms.append(RandomMixup(self.num_classes, p=1.0, alpha=0.2))
+            mixup_transforms.append(RandomCutmix(self.num_classes, p=1.0, alpha=1.0))
+            self.mixupcutmix = tf.RandomChoice(mixup_transforms)
+        else:
+            self.mixupcutmix = None
 
     def load_data(self):
         if self.task == 'T1':
@@ -124,9 +127,8 @@ class CSVDataset(data.Dataset):
         imgs = torch.stack([s['img'] for s in batch])
         targets = torch.stack([s['target'] for s in batch])
 
-        targets = targets.squeeze(1)
         if self.mixupcutmix is not None:
-            imgs, targets = self.mixupcutmix(imgs, targets)
+            imgs, targets = self.mixupcutmix(imgs, targets.squeeze(1))
 
         if self.task != 'T1':
             targets = targets.float()
