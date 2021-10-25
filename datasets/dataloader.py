@@ -14,12 +14,11 @@ def class_imbalance_sampler(labels):
     return sampler
 
 class CSVDataLoader(data.DataLoader):
-    def __init__(self, root_dir, csv_file, image_size, keep_ratio, task, batch_size,  _type='train'):
+    def __init__(self, root_dir, csv_file, image_size, task, batch_size,  _type='train'):
         self.dataset = CSVDataset(
             root_dir=root_dir, 
             csv_file=csv_file,
             image_size=image_size,
-            keep_ratio=keep_ratio,
             task=task, _type=_type)
 
         if task == 'T1' and _type == 'train':

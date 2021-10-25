@@ -1,14 +1,15 @@
 import os
 import torch
 import torch.utils.data as data
+from torchvision.transforms import transforms as tf
 
-import cv2
+from PIL import Image
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import albumentations as A
-from augmentations import get_augmentation, get_resize_augmentation, Denormalize
+from datasets.augmentations.transforms import get_augmentation, Denormalize
+from datasets.augmentations.custom import RandomCutmix, RandomMixup
 
 
 class CSVDataset(data.Dataset):
@@ -18,19 +19,23 @@ class CSVDataset(data.Dataset):
    
     """
     
-    def __init__(self, root_dir, csv_file, image_size, keep_ratio, task='T1', _type='train'):
+    def __init__(self, root_dir, csv_file, image_size, task='T1', _type='train'):
         super().__init__()
 
         self.root_dir = root_dir
         self.csv_file = csv_file
         self.task = task
 
-        self.resize_transforms = get_resize_augmentation(image_size, keep_ratio=keep_ratio)
-        self.transforms = get_augmentation(_type=_type)
+        self.transforms = get_augmentation(image_size, _type=_type)
         
-
         self.fns, self.classes = self.load_data()
         self.num_classes = len(self.classes)
+
+        # MixUp and CutMix
+        mixup_transforms = []
+        mixup_transforms.append(RandomMixup(self.num_classes, p=1.0, alpha=0.2))
+        mixup_transforms.append(RandomCutmix(self.num_classes, p=1.0, alpha=0.2))
+        self.mixupcutmix = tf.RandomChoice(mixup_transforms)
 
     def load_data(self):
         if self.task == 'T1':
@@ -97,13 +102,9 @@ class CSVDataset(data.Dataset):
     
     def load_image(self, image_id):
         img_path = os.path.join(self.root_dir, image_id+'.jpg')
-        ori_img = cv2.imread(img_path)
-        img = cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB).astype(np.float32)
-        img /= 255.0
-        if self.transforms:
-            img = self.resize_transforms(image=img)['image']
-            img = self.transforms(image=img)['image']
-        return img, ori_img
+        img = Image.open(img_path).convert('RGB')
+        aug_img = self.transforms(img)
+        return aug_img, img
 
     def __getitem__(self, index):
         image_id, label = self.fns[index]
@@ -122,6 +123,9 @@ class CSVDataset(data.Dataset):
         ori_imgs = [s['ori_img'] for s in batch]
         imgs = torch.stack([s['img'] for s in batch])
         targets = torch.stack([s['target'] for s in batch])
+
+        if self.mixupcutmix is not None:
+            imgs, targets = self.mixupcutmix(imgs, targets)
 
         if self.task != 'T1':
             targets = targets.float()
@@ -147,7 +151,7 @@ class CSVDataset(data.Dataset):
         normalize = False
         if self.transforms is not None:
             for x in self.transforms.transforms:
-                if isinstance(x, A.Normalize):
+                if isinstance(x, tf.Normalize):
                     normalize = True
                     denormalize = Denormalize(mean=x.mean, std=x.std)
 
@@ -224,8 +228,6 @@ class CSVDataset(data.Dataset):
         return len(self.fns)
     
     def __str__(self):
-        s = "Custom Dataset for Text Classification \n"
-        line = "-------------------------------\n"
         s1 = "Number of samples: " + str(len(self.fns)) + '\n'
         s2 = "Number of classes: " + str(len(self.classes)) + '\n'
-        return s + line + s1 + s2
+        return s1 + s2
