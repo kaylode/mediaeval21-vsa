@@ -235,7 +235,7 @@ class Trainer():
 
         self.model.eval()
 
-        config_name = self.cfg.model_name.split('_')[0]
+        config_name = self.cfg.model_name.split('_')[1]
         if self.valloader.dataset.task == 'T1':
             types = "multiclass"
         else:
