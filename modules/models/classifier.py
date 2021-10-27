@@ -1,4 +1,5 @@
 import sys
+import torch
 from .base_model import BaseModel
 sys.path.append('..')
 
@@ -30,8 +31,14 @@ class Classifier(BaseModel):
 
     def inference_step(self, batch, return_probs=False):
         outputs = self.model(batch, self.device)
-        preds = outputs.detach()
-        return preds.numpy()
+        preds = torch.argmax(outputs, dim=1)
+        preds = preds.detach()
+        if return_probs:
+            probs = torch.nn.functional.softmax(outputs, dim=1)
+            probs, _ = torch.max(probs, dim=1)
+            return preds.cpu().numpy(), probs.cpu().numpy()
+        else:
+            return preds.cpu().numpy()
 
     def evaluate_step(self, batch):
         outputs = self.model(batch, self.device)

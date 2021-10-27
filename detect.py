@@ -27,7 +27,7 @@ class Testset():
         num_samples = len(self.all_image_paths)
 
         # Temporary
-        return 1
+        return 32
 
     def load_images(self):
         self.all_image_paths = []   
@@ -120,6 +120,7 @@ def main(args, config):
                     image_names.append(img_name)
                     pred_list.append(class_names[pred])
                     prob_list.append(prob)
+                pbar.update(1)
 
     result_df = pd.DataFrame({
         'image_names':image_names,

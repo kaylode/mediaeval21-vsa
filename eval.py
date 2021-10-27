@@ -40,7 +40,7 @@ def train(args, config):
             ConfusionMatrix(trainset.classes), 
         ])
 
-    criterion = get_loss(config.loss_fn)
+    criterion = get_loss(config.loss_fn, num_classes=trainset.num_classes)
 
     model = Classifier(
             model = net,
