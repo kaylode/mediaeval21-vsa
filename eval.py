@@ -1,9 +1,8 @@
-from utils.getter import *
+from tools.utils.getter import *
 import argparse
 import os
 
 parser = argparse.ArgumentParser('Evaluate classification')
-parser.add_argument('--config', type=str, default="./configs/configs.yaml", help='Config file')
 parser.add_argument('--weight', type=str, help='checkpoint file')
 
 
@@ -75,7 +74,7 @@ def train(args, config):
 if __name__ == '__main__':
     
     args = parser.parse_args()
-    config = Config(args.config)
+    config = get_config(args.weight)
 
     train(args, config)
     
