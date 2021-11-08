@@ -71,8 +71,12 @@ class MetaVIT(nn.Module):
 
         init_xavier(self)
         
-    def forward(self, src):
-        x = self.encoder(src)
+    def forward(self, batch, device):
+
+        npy_faces = batch['npy_faces'].to(device)
+        npy_dets = batch['npy_dets'].to(device)
+        npy_boxes = batch['npy_boxes'].to(device)
+        x = self.encoder(npy_dets, npy_boxes, npy_faces)
         cls_token = self.cls_token.expand(x.shape[0], -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
         x = torch.cat((cls_token, x), dim=1)
         x = self.blocks(x)
