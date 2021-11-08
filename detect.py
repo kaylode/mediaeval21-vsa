@@ -107,25 +107,34 @@ def main(args, config):
 
     image_names = []
     pred_list = []
-    prob_list = []
+
+    if config.task == 'T1':
+        multilabel = False
+    else:
+        multilabel = True
+
 
     with tqdm(total=len(testloader)) as pbar:
         with torch.no_grad():
             for idx, batch in enumerate(testloader):
                 
-                preds, probs = model.inference_step(batch, return_probs=True)
+                preds = model.inference_step(batch, multilabel=multilabel)
 
-                for idx, (pred, prob) in enumerate(zip(preds, probs)):
+                for idx, pred in enumerate(preds):
                     img_name = batch['img_names'][idx]
                     image_names.append(img_name)
-                    pred_list.append(class_names[pred])
-                    prob_list.append(prob)
+
+                    if not multilabel:
+                        pred_list.append(class_names[pred])
+                    else:
+                        pred_list.append(pred)
+
+                    
                 pbar.update(1)
 
     result_df = pd.DataFrame({
         'image_names':image_names,
         'predictions': pred_list,
-        'probalities': prob_list
     })
 
 
