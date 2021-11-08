@@ -362,3 +362,11 @@ class MetaDataset(data.Dataset):
             'npy_boxes': npy_boxes,
             'targets': targets
         }
+
+    def __len__(self):
+        return len(self.fns)
+    
+    def __str__(self):
+        s1 = "Number of samples: " + str(len(self.fns)) + '\n'
+        s2 = "Number of classes: " + str(len(self.classes)) + '\n'
+        return s1 + s2

@@ -41,7 +41,7 @@ class CSVDataLoader(data.DataLoader):
         )
 
 class MetaDataLoader(data.DataLoader):
-    def __init__(self, face_dir, det_dir, csv_file, image_size, task, batch_size,  _type='train'):
+    def __init__(self, face_dir, det_dir, csv_file, task, batch_size,  _type='train'):
         self.dataset = MetaDataset(
             face_dir, det_dir, 
             csv_file=csv_file,
