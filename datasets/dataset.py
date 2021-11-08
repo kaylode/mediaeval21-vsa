@@ -235,3 +235,130 @@ class CSVDataset(data.Dataset):
         s1 = "Number of samples: " + str(len(self.fns)) + '\n'
         s2 = "Number of classes: " + str(len(self.classes)) + '\n'
         return s1 + s2
+
+
+
+class MetaDataset(data.Dataset):
+    """
+    - Reads a CSV file. Requires first column to be text data, second column to be labels.
+    - Arguments:
+   
+    """
+    
+    def __init__(self, face_dir, det_dir, csv_file, task='T1', _type='train'):
+        super().__init__()
+
+        self.face_dir = face_dir
+        self.det_dir = det_dir
+        self.csv_file = csv_file
+        self.task = task
+        
+        self.fns, self.classes = self.load_data()
+        self.num_classes = len(self.classes)
+
+    def load_data(self):
+        if self.task == 'T1':
+            return self.load_data_t1()
+        else:
+            return self.load_data_t2()
+
+    def load_data_t2(self):
+        df = pd.read_csv(self.csv_file)
+        fns = []
+
+        colnames = list(df.columns)
+        colnames = [i for i in colnames if i.split('.')[0]==self.task]
+        labels = [i.split(':')[1].rstrip().lstrip().lower() for i in colnames]
+
+        colnames.append('id')
+        df = df[colnames]
+
+        if self.task == 'T2':
+            df2 = df[["T2.1: Joy","T2.2: Sadness","T2.3: Fear","T2.4: Disgust","T2.5: Anger","T2.6: Surprise","T2.7: Neutral"]]
+            df2['sum'] = df2.sum(axis=1)
+            df = df[df2['sum']!=0]
+
+        if self.task == 'T3':
+            df3 = df[["T3.1: Anger","T3.2: Anxiety","T3.3: Craving","T3.4: Emphatic pain","T3.5: Fear","T3.6: Horror","T3.7: Joy","T3.8: Relief","T3.9: Sadness","T3.10:surprise"]]
+            df3['sum'] = df3.sum(axis=1)
+            df = df[df3['sum']!=0]
+
+        for _, row in df.iterrows():
+            lst = row.tolist()
+            image_name = lst[-1]
+            classes = lst[:-1]
+            fns.append((image_name, classes))
+
+        return fns, labels
+
+
+    def load_data_t1(self):
+        self.classes_dist = []
+        df = pd.read_csv(self.csv_file)
+        fns = []
+
+        colnames = list(df.columns)
+        colnames = [i for i in colnames if i=='T1']
+        labels = ['neutral', 'negative', 'positive']
+        
+        colnames.append('id')
+        df = df[colnames]
+
+        for _, row in df.iterrows():
+            lst = row.tolist()
+            image_name = lst[-1]
+            classes = lst[0]
+            if classes == 'positive':
+                classes = 2
+            elif classes == 'negative':
+                classes = 1
+            else:
+                classes = 0
+            fns.append((image_name, classes))
+            self.classes_dist.append(classes)
+            
+        return fns, labels
+    
+    def load_numpy(self, image_id):
+        face_path = os.path.join(self.face_dir, image_id+'.npz')
+        det_path = os.path.join(self.det_dir, image_id+'.npz')
+        box_path = os.path.join(self.det_dir, image_id+'_loc.npz')
+        face_npy = np.load(face_path)
+        det_npy = np.load(det_path)
+        box_npy = np.load(box_path)
+        return face_npy, det_npy, box_npy
+
+    def __getitem__(self, index):
+        image_id, label = self.fns[index]
+        face_npy, det_npy, box_npy = self.load_numpy(image_id)
+
+        face_tensor = torch.from_numpy(face_npy['feat'])
+        det_tensor = torch.from_numpy(det_npy['arr_0'])
+        box_tensor = torch.from_numpy(box_npy['arr_0'])
+
+        if not isinstance(label, list):
+            label  = torch.LongTensor([label])
+        else:
+            label  = torch.LongTensor(label)
+
+        return {
+            "npy_face" : face_tensor,
+            'npy_det': det_tensor,
+            'npy_box': box_tensor,
+            "target" : label}
+
+    def collate_fn(self, batch):
+        npy_faces = torch.stack([s['npy_face'] for s in batch])
+        npy_dets = torch.stack([s['npy_det'] for s in batch])
+        npy_boxes = torch.stack([s['npy_box'] for s in batch])
+        targets = torch.stack([s['target'] for s in batch])
+
+        if self.task != 'T1':
+            targets = targets.float()
+
+        return {
+            'npy_faces': npy_faces,
+            'npy_dets': npy_dets,
+            'npy_boxes': npy_boxes,
+            'targets': targets
+        }
