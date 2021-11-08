@@ -59,7 +59,7 @@ class MetaVIT(nn.Module):
     """
     def __init__(self, model_name='vit_base_patch16_384', num_classes=3):
         super().__init__()
-        
+        self.name = "MetaVIT"
         vit = get_pretrained_encoder(model_name)
         self.cls_token = vit.cls_token
         self.embed_dim = vit.embed_dim 
