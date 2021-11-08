@@ -73,10 +73,10 @@ class MetaVIT(nn.Module):
         
     def forward(self, batch, device):
 
-        npy_faces = batch['npy_faces'].to(device)
-        npy_dets = batch['npy_dets'].to(device)
-        npy_boxes = batch['npy_boxes'].to(device)
-        x = self.encoder(npy_dets, npy_boxes, npy_faces)
+        facial_feats = batch['facial_feats'].to(device)
+        det_feats = batch['det_feats'].to(device)
+        loc_feats = batch['loc_feats'].to(device)
+        x = self.encoder(det_feats, loc_feats, facial_feats)
         cls_token = self.cls_token.expand(x.shape[0], -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
         x = torch.cat((cls_token, x), dim=1)
         x = self.blocks(x)
