@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from datasets.augmentations.transforms import get_augmentation, Denormalize
 from datasets.augmentations.custom import RandomCutmix, RandomMixup
-
+from .utils import make_feature_batch
 
 class CSVDataset(data.Dataset):
     """
@@ -325,25 +325,20 @@ class MetaDataset(data.Dataset):
         box_path = os.path.join(self.det_dir, image_id+'_loc.npz')
 
         if os.path.exists(face_path):
-            face_npy = np.load(face_path)
+            face_npy = np.load(face_path)['feat']
         else:
-            face_npy = None
+            face_npy = np.zeros((1,512))
 
-        det_npy = np.load(det_path)
-        box_npy = np.load(box_path)
+        det_npy = np.load(det_path)['arr_0']
+        box_npy = np.load(box_path)['arr_0']
         return face_npy, det_npy, box_npy
 
     def __getitem__(self, index):
         image_id, label = self.fns[index]
         face_npy, det_npy, box_npy = self.load_numpy(image_id)
 
-        if face_npy is not None:
-            face_tensor = torch.from_numpy(face_npy['feat'])
-        else:
-            face_tensor = torch.zeros((1,512))
-
-        det_tensor = torch.from_numpy(det_npy['arr_0'])
-        box_tensor = torch.from_numpy(box_npy['arr_0'])
+        det_tensor = torch.from_numpy(det_npy)
+        box_tensor = torch.from_numpy(box_npy)
 
         if not isinstance(label, list):
             label  = torch.LongTensor([label])
@@ -351,24 +346,26 @@ class MetaDataset(data.Dataset):
             label  = torch.LongTensor(label)
 
         return {
-            "npy_face" : face_tensor,
-            'npy_det': det_tensor,
-            'npy_box': box_tensor,
+            "facial_feat" : face_npy,
+            'det_feat': det_tensor,
+            'loc_feat': box_tensor,
             "target" : label}
 
     def collate_fn(self, batch):
-        npy_faces = torch.stack([s['npy_face'] for s in batch])
-        npy_dets = torch.stack([s['npy_det'] for s in batch])
-        npy_boxes = torch.stack([s['npy_box'] for s in batch])
+        npy_faces = [s['facial_feat'] for s in batch]
+        npy_dets = torch.stack([s['det_feat'] for s in batch])
+        npy_boxes = torch.stack([s['loc_feat'] for s in batch])
         targets = torch.stack([s['target'] for s in batch])
+
+        npy_faces = make_feature_batch(npy_faces, pad_token=0)
 
         if self.task != 'T1':
             targets = targets.float()
 
         return {
-            'npy_faces': npy_faces,
-            'npy_dets': npy_dets,
-            'npy_boxes': npy_boxes,
+            'facial_feats': npy_faces,
+            'det_feats': npy_dets,
+            'loc_feats': npy_boxes,
             'targets': targets
         }
 
