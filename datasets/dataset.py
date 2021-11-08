@@ -323,7 +323,12 @@ class MetaDataset(data.Dataset):
         face_path = os.path.join(self.face_dir, image_id+'.npz')
         det_path = os.path.join(self.det_dir, image_id+'.npz')
         box_path = os.path.join(self.det_dir, image_id+'_loc.npz')
-        face_npy = np.load(face_path)
+
+        if os.path.exists(face_path):
+            face_npy = np.load(face_path)
+        else:
+            face_npy = None
+
         det_npy = np.load(det_path)
         box_npy = np.load(box_path)
         return face_npy, det_npy, box_npy
@@ -332,7 +337,11 @@ class MetaDataset(data.Dataset):
         image_id, label = self.fns[index]
         face_npy, det_npy, box_npy = self.load_numpy(image_id)
 
-        face_tensor = torch.from_numpy(face_npy['feat'])
+        if face_npy is not None:
+            face_tensor = torch.from_numpy(face_npy['feat'])
+        else:
+            face_tensor = torch.zeros((1,512))
+
         det_tensor = torch.from_numpy(det_npy['arr_0'])
         box_tensor = torch.from_numpy(box_npy['arr_0'])
 
