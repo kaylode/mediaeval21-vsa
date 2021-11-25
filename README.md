@@ -21,7 +21,10 @@ metavit | ImageNet | Vision Transformer with extracted meta features
 
 [^1]: NoisyStudent
 
-- In order to deal with imbalance problem, we apply Focal Loss for task 1. We also apply many strong data augmentation techniques such as RandAugment, CutMix, MixUp to add more training samples.
+- In order to deal with imbalance dataset, which is the main problem of the task, we apply following methods:
+    - Focal Loss for task 1. 
+    - Strong data augmentation techniques such as RandAugment, CutMix, MixUp to add more training samples. 
+    - Smart sampling technique - split labels equally into batches so that all classes are evenly distributed for each batch.
 
 - The other tasks which are multilabel classification therefore Binary Cross Entropy with Sigmoid function is used.
 
