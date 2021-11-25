@@ -5,10 +5,8 @@ datasets/__pycache__/image_folder.cpython-37.pyc
 *.pyc
 datasets/train.csv
 *.csv
-*.jpg
 models/resnet.py
 *.pth
-*.json
 loggers/runs/events.out.tfevents.1597858850.KAY-PC.6804.0
 .ipynb_checkpoints/Testing Notebook-checkpoint.ipynb
 loggers/runs/events.out.tfevents.1598020676.KAY-PC.12156.0
@@ -64,6 +62,5 @@ models/tpu_model.py
 .ipynb_checkpoints/Faster RCNN-checkpoint.ipynb
 *.1
 *.ipynb
-*.png
 *.txt
 Data Visualizer.ipynb
