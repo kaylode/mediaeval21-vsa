@@ -32,6 +32,8 @@ metavit | ImageNet | Vision Transformer with extracted meta features
 
     - Then, for each samples, two meta features are concatenated then forwarded through a pretrained Vision Transformer, implementation from timm.
 
+- To ensemble all our models, we perform majority votes technique from prediction of these models.
+
 ## **Results**
 
 **Weighted F1-Score is used as metric evaluation**
