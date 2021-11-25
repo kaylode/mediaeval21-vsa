@@ -1,72 +1,79 @@
-# Visual Sentiment Analysis: A Natural Disaster Use-case
+# **Visual Sentiment Analysis: A Natural Disaster Use-case**
 
-The increasing popularity of the social networks and users' tendency towards sharing their feelings, expressions and opinions in text, visual and audio content have opened new opportunities and challenges in sentiment analysis.There has been a great deal of work done related to sentimental analysis of textual data but idea of extracting sentiments from the videos and images has not been addressed the same way. The focus of this task is images related to different natural disasters around the world, able to perform a meaningful analysis on this data could be of great societal importance.
+## **Description**
+The goal of this project is to analyze sentiment aspects of pictures taken in natural disaster scenarios. While these scene mostly toward negative feelings, there are visual influence appears in these images that has positive impact on the eyes of human. 
 
-## MediaEval 2021
+|<img width="500" alt="screen" src="assets/figure.PNG"> |
+|:-------------------------:|
+| Figure: Statistics of crowd-sourcing study in terms of what kind of information in the images influence users's emotion most. Figure from organization's paper.  |
 
-<details>
-  
-### Motivation and background
- 
-<details>
-As implied by the popular proverb "a picture is worth a thousand words," visual contents are an effective means to convey not only facts but also cues about sentiments and emotions. Such cues representing the emotions and sentiments of the photographers may trigger similar feelings from the observer and could be of help in understanding visual contents beyond semantic concepts in different application domains, such as education, entertainment, advertisement, and journalism. To this aim, masters of photography have always utilized smart choices, especially in terms of scenes, perspective, angle of shooting, and color filtering, to let the underlying information smoothly flow to the general public. Similarly, every user aiming to increase in popularity on the Internet will utilize the same tricks. However, it is not fully clear how such emotional cues can be evoked by visual contents and more importantly how the sentiments derived from a scene by an automatic algorithm can be expressed. This opens an interesting line of research to interpret emotions and sentiments perceived by users viewing visual contents.
-</details>
 
-### Dataset Details
-  
-<details>
-The dataset consist of disaster-related images from all over the world. Each image has been manually annotated by five different people with tags related to emotion generated when viewing the image. If the label is selected by majority of the annotators then label is assigned to that image. There were five different type of question asked to annotators to get a more diverse perspective of the type of emotion these images are invoking. The dataset consists of 2,432 Images ([dev-set](https://drive.google.com/file/d/1PszWQ3Y5TWxxCnIhaJaG7EJjG3YlB_Qn/view?usp=sharing)) and 1,199 Images (test-set). 
-Devset can be downloaded from [here](https://drive.google.com/file/d/1PszWQ3Y5TWxxCnIhaJaG7EJjG3YlB_Qn/view?usp=sharing).
-</details>
-  
-### Task Description
-  
-<details>
-Disaster-related images are complex and often evoke an emotional response, both good and bad. This task focuses on performing visual sentiment analysis on images collected from disasters across the world. 
-<!-- # Here you need a short sentence so that people know that it is the sentiment expressed by the photographer as judged by crowdsourcing workers-->
-The images contained in the provided dataset aim to provoke an emotional response through both intentional framining and based on the contents itself.
+## **Method**
+This repo contains source code for our run 1:
+- In this run, we use various method to tackle the 3 tasks. Then we apply heuristic ensemble method to finalize our results. 
+- Methods that are used:
 
-- Subtask 1: Single-label Image Classification* The first task aims at a single-label image classification task, where the images are arranged in three different classes, namely positive, negative, and neutral with a bias towards the negative samples, due to the topic taken into consideration. 
+Method | Pretrained model | Description
+--- | --- | ---
+efficientnet_b{i} (ns)[^1] | ImageNet | EfficientNet models from timm
+efficientnetv2_m | ImageNet | EfficientNet-V2 model from timm
+metavit | ImageNet | Vision Transformer with extracted meta features
 
-- Subtask 2: Multi-label Image Classification* This is a multi-label image classification task where the participants will be provided with multi-labeled images. The multi-label classification strategy, which assigns multiple labels to an image, better suits our visual sentiment classification problem and is intended to show the correlation of different sentiments. In this task seven classes, namely joy, sadness, fear, disgust, anger, surprise, and neutral, are covered. 
+[^1]: NoisyStudent
 
-- Subtask 3: Multi-label Image Classification* The task is also a multi-label, however, a wider range of sentiment classes are covered. Going deeper in the sentiment hierarchy, the complexity of the task increases.  The sentiment categories covered in this task include  anger, anxiety, craving, empathetic pain, fear, horror, joy, relief, sadness, and surprise.  
-</details>
-  
-### Task Schedule
-  
-<details>
-  
-- 15 October (Tentative) : test-set release <!-- # Replace XX with your date. We suggest setting the date in June-July-->
-- 5 November: Runs due <!-- # Replace XX with your date. We suggest setting enough time in order to have enough time to assess and return the results by the Results returned deadline-->
-- 15 November: Results returned  <!-- Replace XX with your date. Latest possible should be 15 November-->
-- 22 November: Working notes paper  <!-- Fixed. Please do not change. Exact date to be decided-->
-- 6-8 December: MediaEval 2021 Workshop <!-- Fixed. Please do not change. Exact date to be decided-->
-  
-</details>
-  
-### Evaluation methodology
-  
-<details>
-All the tasks will be evaluated using standard classification metrics, where F1-Score will be used to rank the different submissions. We also encourage participants to carry out a failure analysis of the results to gain insight into why a classifier may make a mistake.
-<!-- # This description needs to make clear what the crowdworkers were actually asked. It seems that they are not reporting their own experience of the emotional impact of the photographs, but rather the intention of the photographer-->
-</details>
-  
-### Submission
-  
-<details>
-For this task you may submit up to 2 runs fro each task.
-  
-#### Submission Format
+- In order to deal with imbalance problem, we apply Focal Loss for task 1. We also apply many strong data augmentation techniques such as RandAugment, CutMix, MixUp to add more training samples.
 
-Please submit your runs for the task in the form of a csv file, where each line contains one Image ID followed by the label for the T1,T2 and T3. Image IDs and the labels should be comma separated. For reference please follow the devset GT format.
-</details>
-  
-</details>
+- The other tasks which are multilabel classification therefore Binary Cross Entropy with Sigmoid function is used.
 
-## Notebooks
+- In the metavit method, we introduce more complex pipeline:
+    - First, facenet model ise used to extract facial features from all samples in the dataset. Due to our observation, we observe that ```positive``` and ```neutral``` samples are mostly based on the emotion of people within the scene, so the extracted features may contains helpful information.
+
+    - Second, as can be seen in figure above, visible objects in the scene also affect the feelings of the observer, thus we inherit FasterRCNN model to extract bottom-up attention features as additional information.
+
+    - Then, for each samples, two meta features are concatenated then forwarded through a pretrained Vision Transformer, implementation from timm.
+
+## **Results**
+
+**Weighted F1-Score is used as metric evaluation**
+
+- Evalution on our valset:
+
+Method | Task-1 | Task-2  | Task-3
+--- | --- | --- | --- 
+efficientnet_b5 | 0.6839 | 0.674 | 0.54
+efficientnet_b5_ns | 0.722 | 0.68 | 0.527
+efficientnet_b6_ns | 0.684 | 0.669 | 0.5258
+efficientnetv2_m | 0.709 | 0.6764 | 0.5394
+metavit | 0.705 | 0.661 | 0.532
+ensemble | 0.733 | 0.646 | 0.5
+
+- Final results on testset:
+
+Team-run | Task-1 | Task-2 | Task-3
+--- | --- | --- | --- 
+SELAB-HCMUS khoi_submission/run1 | 0.722 |0.605 | 0.584
+
+## **Notebooks**
+
 - Extract Face Embeddings using MTCNN. [![Notebook](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1n2yVITUdTzNXHvAdPgpbYjVgh8zXDEg6?usp=sharing)
 
-## References
+- Faster-RCNN Bottom-Up Attention. [![Notebook](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1xC4mVc_bp0t4-7T4xVum3AECFCalsgsv?usp=sharing)
 
+- Training/Evalution/Inference notebooks [![Notebook](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A5ZDwFZwAdsjnU-mGaCl_yvQY4QCpg9f?usp=sharing)
+
+## **Code References**
+
+- https://github.com/rwightman/pytorch-image-models
 - https://github.com/timesler/facenet-pytorch
+- https://github.com/airsplay/py-bottom-up-attention
+
+## **Paper references**
+
+```
+@inproceedings{hassan2021vissentiment,
+  title={Visual Sentiment Analysis: A Natural Disaster Use-case Task at MediaEval 2021},
+  author={Hassan, Syed Zohaib and  Ahmad, Kashif and Riegler, Michael and Hicks, Steven  and  Conci, Nicola, and Halvorsen, Pal and  Al-Fuqaha, Ala},
+  booktitle={Proceedings of the MediaEval 2021 Workshop, Online},
+  year={2021}
+}
+```
