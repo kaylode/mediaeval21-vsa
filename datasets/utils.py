@@ -16,7 +16,7 @@ def make_feature_batch(features,  pad_token=0):
     
     # Init batch
     batch_size = len(features)
-    batch = np.ones((batch_size, max_len))
+    batch = np.ones((batch_size, max_len, 512))
     batch *= pad_token
         
     # Copy data to batch
