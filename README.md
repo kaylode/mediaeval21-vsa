@@ -75,6 +75,17 @@ SELAB-HCMUS khoi_submission/run1 | 0.722 |0.605 | 0.584
 ## **Paper references**
 
 ```
+@misc{hassan2020visual,
+      title={Visual Sentiment Analysis from Disaster Images in Social Media}, 
+      author={Syed Zohaib Hassan and Kashif Ahmad and Steven Hicks and Paal Halvorsen and Ala Al-Fuqaha and Nicola Conci and Michael Riegler},
+      year={2020},
+      eprint={2009.03051},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
+
+```
 @inproceedings{hassan2021vissentiment,
   title={Visual Sentiment Analysis: A Natural Disaster Use-case Task at MediaEval 2021},
   author={Hassan, Syed Zohaib and  Ahmad, Kashif and Riegler, Michael and Hicks, Steven  and  Conci, Nicola, and Halvorsen, Pal and  Al-Fuqaha, Ala},
