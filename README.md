@@ -18,7 +18,7 @@ Method | Pretrained model | Description
 efficientnet_b{i} (ns)[^1] | ImageNet | EfficientNet models from timm
 efficientnetv2_m | ImageNet | EfficientNet-V2 model from timm
 metavit | ImageNet | Vision Transformer with extracted meta features
-
+ 
 [^1]: NoisyStudent
 
 - In order to deal with imbalance dataset, which is the main problem of the task, we apply following methods:
