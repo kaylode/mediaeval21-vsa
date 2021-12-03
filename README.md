@@ -58,6 +58,11 @@ Team-run | Task-1 | Task-2 | Task-3
 --- | --- | --- | --- 
 SELAB-HCMUS khoi_submission/run1 | 0.722 |0.605 | 0.584
 
+## Working note
+- Our working note: [HCMUS at MediaEval 2021: Efficient methods of Metadata
+Embedding and Augmentation for Visual Sentiment Analysis](./assets/_Visual_Sentiment_Task_MediaEval___2021___HCMUS_.pdf)
+
+
 ## **Notebooks**
 
 - Extract Face Embeddings using MTCNN. [![Notebook](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1n2yVITUdTzNXHvAdPgpbYjVgh8zXDEg6?usp=sharing)
