@@ -28,6 +28,13 @@ metavit | ImageNet | Vision Transformer with extracted meta features
 
 - The other tasks which are multilabel classification therefore Binary Cross Entropy with Sigmoid function is used.
 
+## Pipeline
+
+|<img height="300" alt="screen" src="assets/pipeline.png"> | <img height="300" alt="screen" src="assets/pipeline2.png"> |
+|:-------------------------:|:-------------------------:|
+| MetaVIT | Ensemble |
+
+
 - In the metavit method, we introduce more complex pipeline:
     - First, facenet model ise used to extract facial features from all samples in the dataset. Due to our observation, we observe that ```positive``` and ```neutral``` samples are mostly based on the emotion of people within the scene, so the extracted features may contains helpful information.
 
