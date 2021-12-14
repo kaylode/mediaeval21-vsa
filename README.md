@@ -1,5 +1,9 @@
 # **Visual Sentiment Analysis: A Natural Disaster Use-case**
 
+| Some samples from the dataset.  |
+|:-------------------------:|
+| <img width="1000" alt="screen" src="assets/dataset.PNG"> |
+
 ## **Description**
 The goal of this project is to analyze sentiment aspects of pictures taken in natural disaster scenarios. While these scene mostly toward negative feelings, there are visual influence appears in these images that has positive impact on the eyes of human. 
 
@@ -21,6 +25,11 @@ metavit | ImageNet | Vision Transformer with extracted meta features
  
 [^1]: NoisyStudent
 
+|<img height="300" alt="screen" src="assets/augmentation.PNG"> | <img height="400" alt="screen" src="assets/metadata.PNG"> |
+|:-------------------------:|:-------------------------:|
+| Augmentation methods | Metadata |
+
+
 - In order to deal with imbalance dataset, which is the main problem of the task, we apply following methods:
     - Focal Loss for task 1. 
     - Strong data augmentation techniques such as RandAugment, CutMix, MixUp to add more training samples. 
@@ -33,6 +42,7 @@ metavit | ImageNet | Vision Transformer with extracted meta features
 |<img height="300" alt="screen" src="assets/pipeline.png"> | <img height="300" alt="screen" src="assets/pipeline2.png"> |
 |:-------------------------:|:-------------------------:|
 | MetaVIT | Ensemble |
+
 
 
 - In the metavit method, we introduce more complex pipeline:
