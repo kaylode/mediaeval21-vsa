@@ -198,8 +198,10 @@ class VSA_T2(CSVDataset):
         face_dir: str,
         det_dir: str,
         transform: Optional[List] = None,
+        task: str = 'T2',
         **kwargs
     ):
+        self.task = task
         super().__init__(image_dir, csv_path, face_dir, det_dir, transform)
 
     def _load_data(self):

@@ -20,12 +20,16 @@ class MultilabelAccuracy(Metric):
         targets = batch["targets"] 
 
         outputs = torch.sigmoid(outputs)
-        prediction = output > self.threshold
-        prediction = prediction.long()
+        prediction = outputs > self.threshold
+        prediction = prediction.long().detach().cpu()
 
-        correct = (prediction.view(-1) == targets.view(-1)).sum()
-        correct = correct.cpu()
-        self.total_correct += correct
+        correct = (prediction == targets)
+
+        results = 0
+        for i in correct:
+            results += i.all()
+
+        self.total_correct += results
         self.sample_size += prediction.size(0)
 
     def value(self):
