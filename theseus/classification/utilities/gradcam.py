@@ -55,7 +55,7 @@ class CAMWrapper(BaseCAM):
                 LoggerObserver.text(
                     f"""Model {model_name} has not been registered for using CAM. 
                     Please register in the `model_last_layers` dict above""", 
-                    LoggerObserver.ERROR
+                    level=LoggerObserver.ERROR
                 )
 
             target_layers = get_layer_recursively(model, model_last_layers[model_name])

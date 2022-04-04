@@ -150,113 +150,113 @@ class VisualizerCallbacks(Callbacks):
         plt.clf()   # Clear figure
         plt.close()
 
-    @torch.enable_grad() #enable grad for CAM
-    def on_val_epoch_end(self, logs: Dict=None):
-        """
-        After finish validation
-        """
+    # @torch.enable_grad() #enable grad for CAM
+    # def on_val_epoch_end(self, logs: Dict=None):
+    #     """
+    #     After finish validation
+    #     """
 
-        iters = logs['iters']
-        last_batch = logs['last_batch']
-        model = self.params['trainer'].model
-        valloader = self.params['trainer'].valloader
-        optimizer = self.params['trainer'].optimizer
+    #     iters = logs['iters']
+    #     last_batch = logs['last_batch']
+    #     model = self.params['trainer'].model
+    #     valloader = self.params['trainer'].valloader
+    #     optimizer = self.params['trainer'].optimizer
 
-        # Zeroing gradients in model and optimizer for supress warning
-        optimizer.zero_grad()
-        model.zero_grad()
+    #     # Zeroing gradients in model and optimizer for supress warning
+    #     optimizer.zero_grad()
+    #     model.zero_grad()
 
-        # Vizualize Grad Class Activation Mapping and model predictions
-        LOGGER.text("Visualizing model predictions...", level=LoggerObserver.DEBUG)
+    #     # Vizualize Grad Class Activation Mapping and model predictions
+    #     LOGGER.text("Visualizing model predictions...", level=LoggerObserver.DEBUG)
 
-        images = last_batch["inputs"]
-        targets = last_batch["targets"]
-        model.eval()
+    #     images = last_batch["inputs"]
+    #     targets = last_batch["targets"]
+    #     model.eval()
         
-        ## Calculate GradCAM
-        model_name = model.model.name
-        grad_cam = CAMWrapper.get_method(
-            name='gradcam', 
-            model=model.model.get_model(), 
-            model_name=model_name, use_cuda=next(model.parameters()).is_cuda)
+    #     ## Calculate GradCAM
+    #     model_name = model.model.name
+    #     grad_cam = CAMWrapper.get_method(
+    #         name='gradcam', 
+    #         model=model.model.get_model(), 
+    #         model_name=model_name, use_cuda=next(model.parameters()).is_cuda)
 
-        grayscale_cams, label_indices, scores = grad_cam(images, return_probs=True)
+    #     grayscale_cams, label_indices, scores = grad_cam(images, return_probs=True)
             
-        gradcam_batch = []
-        pred_batch = []
-        for idx in range(len(grayscale_cams)):
-            image = images[idx]
-            target = targets[idx].item()
-            label = label_indices[idx]
-            grayscale_cam = grayscale_cams[idx, :]
-            score = scores[idx]
+    #     gradcam_batch = []
+    #     pred_batch = []
+    #     for idx in range(len(grayscale_cams)):
+    #         image = images[idx]
+    #         target = targets[idx].item()
+    #         label = label_indices[idx]
+    #         grayscale_cam = grayscale_cams[idx, :]
+    #         score = scores[idx]
 
-            img_show = self.visualizer.denormalize(image)
-            self.visualizer.set_image(img_show)
-            if valloader.dataset.classnames is not None:
-                label = valloader.dataset.classnames[label]
-                target = valloader.dataset.classnames[target]
+    #         img_show = self.visualizer.denormalize(image)
+    #         self.visualizer.set_image(img_show)
+    #         if valloader.dataset.classnames is not None:
+    #             label = valloader.dataset.classnames[label]
+    #             target = valloader.dataset.classnames[target]
 
-            if label == target:
-                color = [0,1,0]
-            else:
-                color = [1,0,0]
+    #         if label == target:
+    #             color = [0,1,0]
+    #         else:
+    #             color = [1,0,0]
 
-            self.visualizer.draw_label(
-                f"GT: {target}\nP: {label}\nC: {score:.4f}", 
-                fontColor=color, 
-                fontScale=0.8,
-                thickness=2,
-                outline=None,
-                offset=100
-            )
+    #         self.visualizer.draw_label(
+    #             f"GT: {target}\nP: {label}\nC: {score:.4f}", 
+    #             fontColor=color, 
+    #             fontScale=0.8,
+    #             thickness=2,
+    #             outline=None,
+    #             offset=100
+    #         )
             
-            img_cam =show_cam_on_image(img_show, grayscale_cam, use_rgb=True)
+    #         img_cam =show_cam_on_image(img_show, grayscale_cam, use_rgb=True)
 
-            img_cam = TFF.to_tensor(img_cam)
-            gradcam_batch.append(img_cam)
+    #         img_cam = TFF.to_tensor(img_cam)
+    #         gradcam_batch.append(img_cam)
 
-            pred_img = self.visualizer.get_image()
-            pred_img = TFF.to_tensor(pred_img)
-            pred_batch.append(pred_img)
+    #         pred_img = self.visualizer.get_image()
+    #         pred_img = TFF.to_tensor(pred_img)
+    #         pred_batch.append(pred_img)
 
-            if idx == 63: # limit number of images
-                break
+    #         if idx == 63: # limit number of images
+    #             break
         
-        # GradCAM images
-        gradcam_grid_img = self.visualizer.make_grid(gradcam_batch)
-        fig = plt.figure(figsize=(8,8))
-        plt.imshow(gradcam_grid_img)
-        plt.axis("off")
-        plt.tight_layout(pad=0)
-        LOGGER.log([{
-            'tag': "Validation/gradcam",
-            'value': fig,
-            'type': LoggerObserver.FIGURE,
-            'kwargs': {
-                'step': iters
-            }
-        }])
+    #     # GradCAM images
+    #     gradcam_grid_img = self.visualizer.make_grid(gradcam_batch)
+    #     fig = plt.figure(figsize=(8,8))
+    #     plt.imshow(gradcam_grid_img)
+    #     plt.axis("off")
+    #     plt.tight_layout(pad=0)
+    #     LOGGER.log([{
+    #         'tag': "Validation/gradcam",
+    #         'value': fig,
+    #         'type': LoggerObserver.FIGURE,
+    #         'kwargs': {
+    #             'step': iters
+    #         }
+    #     }])
 
-        # Prediction images
-        pred_grid_img = self.visualizer.make_grid(pred_batch)
-        fig = plt.figure(figsize=(10,10))
-        plt.imshow(pred_grid_img)
-        plt.axis("off")
-        plt.tight_layout(pad=0)
-        LOGGER.log([{
-            'tag': "Validation/prediction",
-            'value': fig,
-            'type': LoggerObserver.FIGURE,
-            'kwargs': {
-                'step': iters
-            }
-        }])
+    #     # Prediction images
+    #     pred_grid_img = self.visualizer.make_grid(pred_batch)
+    #     fig = plt.figure(figsize=(10,10))
+    #     plt.imshow(pred_grid_img)
+    #     plt.axis("off")
+    #     plt.tight_layout(pad=0)
+    #     LOGGER.log([{
+    #         'tag': "Validation/prediction",
+    #         'value': fig,
+    #         'type': LoggerObserver.FIGURE,
+    #         'kwargs': {
+    #             'step': iters
+    #         }
+    #     }])
 
-        plt.cla()   # Clear axis
-        plt.clf()   # Clear figure
-        plt.close()
+    #     plt.cla()   # Clear axis
+    #     plt.clf()   # Clear figure
+    #     plt.close()
 
-        # Zeroing gradients in model and optimizer for safety
-        optimizer.zero_grad()
-        model.zero_grad()
+    #     # Zeroing gradients in model and optimizer for safety
+    #     optimizer.zero_grad()
+    #     model.zero_grad()

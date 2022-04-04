@@ -66,27 +66,34 @@ class MetaVIT(nn.Module):
         classnames: Optional[List] = None):
         super().__init__()
 
+        self.name = model_name
         self.num_classes = num_classes
         self.classnames = classnames
-        vit = get_pretrained_encoder(model_name)
+        vit = get_pretrained_encoder(model_name).double()
         self.cls_token = vit.cls_token
         self.embed_dim = vit.embed_dim 
         self.blocks = vit.blocks
         self.norm = vit.norm
         self.pre_logits = vit.pre_logits
-        self.head = nn.Linear(self.embed_dim, num_classes)
-        self.encoder = MetaEncoder(768)
+        self.head = nn.Linear(self.embed_dim, num_classes).double()
+        self.encoder = MetaEncoder(768).double()
 
         init_xavier(self)
-        
+    
+    def get_model(self):
+        """
+        Return the full architecture of the model, for visualization
+        """
+        return self
+
     def forward(self, batch, device: torch.device):
 
         facial_feats = move_to(batch['facial_feats'], device)
         det_feats = move_to(batch['det_feats'], device)
         loc_feats = move_to(batch['loc_feats'], device)
         x = self.encoder(det_feats, loc_feats, facial_feats)
-        cls_token = self.cls_token.expand(x.shape[0], -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
-        x = torch.cat((cls_token, x), dim=1)
+        cls_token = self.cls_token.expand(x.shape[0], -1, -1).to(device)  # stole cls_tokens impl from Phil Wang, thanks
+        x = torch.cat((cls_token, x), dim=1).double()
         x = self.blocks(x)
         x = self.norm(x)
         x = self.pre_logits(x[:, 0])

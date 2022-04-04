@@ -92,6 +92,7 @@ class Pipeline(object):
         model = get_instance(
             self.opt["model"], 
             registry=MODEL_REGISTRY, 
+            num_classes = len(CLASSNAMES),
             classnames=CLASSNAMES)
         model = move_to(model, self.device)
 

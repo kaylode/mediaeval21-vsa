@@ -1,9 +1,12 @@
 from typing import List, Optional, Dict
 import torch
+import os.path as osp
 import pandas as pd
 import numpy as np
 from PIL import Image
-import os.path as osp
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 from .dataset import ClassificationDataset
 
 from theseus.classification.utilities.batch import make_feature_batch
@@ -83,7 +86,7 @@ class CSVDataset(ClassificationDataset):
             return self.load_data_t2()
 
     def load_data_t2(self):
-        df = pd.read_csv(self.csv_file)
+        df = pd.read_csv(self.csv_path)
         fns = []
 
         colnames = list(df.columns)
@@ -113,7 +116,7 @@ class CSVDataset(ClassificationDataset):
 
     def load_data_t1(self):
         self.classes_dist = []
-        df = pd.read_csv(self.csv_file)
+        df = pd.read_csv(self.csv_path)
         fns = []
 
         colnames = list(df.columns)
@@ -127,12 +130,6 @@ class CSVDataset(ClassificationDataset):
             lst = row.tolist()
             image_name = lst[-1]
             classes = lst[0]
-            if classes == 'positive':
-                classes = 2
-            elif classes == 'negative':
-                classes = 1
-            else:
-                classes = 0
             fns.append((image_name, classes))
             self.classes_dist.append(classes)
             
@@ -145,19 +142,18 @@ class CSVDataset(ClassificationDataset):
         LOGGER.text("Calculating class distribution...", LoggerObserver.DEBUG)
         self.classes_dist = []
 
-        # Load csv
-        df = pd.read_csv(self.csv_path)
-        for _, row in df.iterrows():
-            _, label = row
-            self.classes_dist.append(self.classes_idx[label])
+        for _, label_name in self.fns:
+            self.classes_dist.append(self.classes_idx[label_name])
         return self.classes_dist
 
     def __getitem__(self, idx: int) -> Dict:
         """
         Get one item
         """
-        image_name, label_name = self.fns[idx]
-        face_npy, det_npy, box_npy = self.load_numpy(image_name)
+        image_id, label_name = self.fns[idx]
+        face_npy, det_npy, box_npy = self.load_numpy(image_id)
+
+        image_name = image_id +'.jpg'
         image_path = osp.join(self.image_dir, image_name)
 
         det_tensor = torch.from_numpy(det_npy)
@@ -210,7 +206,7 @@ class CSVDataset(ClassificationDataset):
             'img_names': img_names,
             'ori_sizes': ori_sizes,
 
-            'facial_feats': npy_faces,
-            'det_feats': npy_dets,
-            'loc_feats': npy_boxes,
+            'facial_feats': npy_faces.double(),
+            'det_feats': npy_dets.double(),
+            'loc_feats': npy_boxes.double(),
         }

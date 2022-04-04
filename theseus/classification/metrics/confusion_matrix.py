@@ -89,7 +89,7 @@ class ConfusionMatrix(Metric):
             targets = targets.cpu()
 
         self.outputs +=  outputs.numpy().tolist()
-        self.targets +=  targets.numpy().tolist()
+        self.targets +=  targets.squeeze().numpy().tolist()
         
     def reset(self):
         self.outputs = []

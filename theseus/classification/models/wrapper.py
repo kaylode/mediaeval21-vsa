@@ -18,7 +18,7 @@ class ModelWithLoss(nn.Module):
         self.device = device
 
     def forward(self, batch, metrics=None):
-        outputs = self.model(move_to(batch["inputs"], self.device))
+        outputs = self.model(batch, self.device)
         loss, loss_dict = self.criterion(outputs, batch, self.device)
 
         if metrics is not None:
