@@ -8,6 +8,7 @@ from .utils import init_xavier
 from theseus.utilities.cuda import move_to
 
 TIMM_MODELS = [
+        "vit_base_patch16_384",
         "deit_tiny_distilled_patch16_224", 
         'deit_small_distilled_patch16_224', 
         'deit_base_distilled_patch16_224',
@@ -18,9 +19,6 @@ def get_clones(module, N):
     "Produce N identical layers."
     """
     return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
-
-
-TIMM_MODELS = ["vit_base_patch16_384"]
 
 def get_pretrained_encoder(model_name, **kwargs):
     assert model_name in TIMM_MODELS, "Timm Model not found"
