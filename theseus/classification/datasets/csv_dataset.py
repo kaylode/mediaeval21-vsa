@@ -101,9 +101,9 @@ class CSVDataset(ClassificationDataset):
             'img_names': img_names,
             'ori_sizes': ori_sizes,
 
-            'facial_feats': npy_faces.double(),
-            'det_feats': npy_dets.double(),
-            'loc_feats': npy_boxes.double(),
+            'facial_feats': npy_faces.float(),
+            'det_feats': npy_dets.float(),
+            'loc_feats': npy_boxes.float(),
         }
 
 class VSA_T1(CSVDataset):
