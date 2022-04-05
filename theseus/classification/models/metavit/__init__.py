@@ -63,7 +63,7 @@ class MetaVIT(nn.Module):
     def __init__(
         self, 
         model_name='vit_base_patch16_384', 
-        global_model_name='convnext_small',
+        global_model_name: str ='convnext_small',
         num_classes: int = 1000,
         classnames: Optional[List] = None):
         super().__init__()
@@ -79,11 +79,16 @@ class MetaVIT(nn.Module):
         self.norm = vit.norm
         self.pre_logits = vit.pre_logits
         self.encoder = MetaEncoder(768).double()
-        self.cnn = BaseTimmModel(
-          name=global_model_name,
-          num_classes=num_classes, 
-          from_pretrained=True)
-        self.head = nn.Linear(self.embed_dim+self.cnn.model.num_features, num_classes).double()
+
+        if global_model_name:
+            self.cnn = BaseTimmModel(
+                name=global_model_name,
+                num_classes=num_classes, 
+                from_pretrained=True)
+            self.head = nn.Linear(self.embed_dim+self.cnn.model.num_features, num_classes).double()
+        else:
+            self.head = nn.Linear(self.embed_dim, num_classes).double()
+
         init_xavier(self)
     
     def get_model(self):
@@ -99,7 +104,8 @@ class MetaVIT(nn.Module):
         det_feats = move_to(batch['det_feats'], device)
         loc_feats = move_to(batch['loc_feats'], device)
 
-        global_feats = self.cnn(images)['features']
+        if self.global_model_name:
+            global_feats = self.cnn(images)['features']
         local_feats = self.encoder(det_feats, loc_feats, facial_feats)
         cls_token = self.cls_token.expand(local_feats.shape[0], -1, -1).to(device)  # stole cls_tokens impl from Phil Wang, thanks
         local_feats = torch.cat((cls_token, local_feats), dim=1).double()
@@ -107,12 +113,14 @@ class MetaVIT(nn.Module):
         local_feats = self.norm(local_feats)
         local_feats = self.pre_logits(local_feats[:, 0])
 
-        # concat global and local features
-        feats = torch.cat([global_feats, local_feats], dim=1)
+        if self.global_model_name:
+            # concat global and local features
+            feats = torch.cat([global_feats, local_feats], dim=1)
+        else:
+            feats = local_feats
 
         # Final head
         logits = self.head(feats)
-
         
         return {
             'outputs': logits,
