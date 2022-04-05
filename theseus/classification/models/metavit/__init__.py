@@ -6,6 +6,9 @@ import torch.nn as nn
 from .embedding import FeatureEmbedding, SpatialEncoding
 from .utils import init_xavier
 from theseus.utilities.cuda import move_to
+import torchvision.models as models
+
+from theseus.classification.models.timm_models import BaseTimmModel
 
 TIMM_MODELS = [
         "vit_base_patch16_384",
@@ -60,11 +63,13 @@ class MetaVIT(nn.Module):
     def __init__(
         self, 
         model_name='vit_base_patch16_384', 
+        global_model_name='convnext_small',
         num_classes: int = 1000,
         classnames: Optional[List] = None):
         super().__init__()
 
         self.name = model_name
+        self.global_model_name = global_model_name
         self.num_classes = num_classes
         self.classnames = classnames
         vit = get_pretrained_encoder(model_name).double()
@@ -73,9 +78,12 @@ class MetaVIT(nn.Module):
         self.blocks = vit.blocks
         self.norm = vit.norm
         self.pre_logits = vit.pre_logits
-        self.head = nn.Linear(self.embed_dim, num_classes).double()
         self.encoder = MetaEncoder(768).double()
-
+        self.cnn = BaseTimmModel(
+          name=global_model_name,
+          num_classes=num_classes, 
+          from_pretrained=True)
+        self.head = nn.Linear(self.embed_dim+self.cnn.model.num_features, num_classes).double()
         init_xavier(self)
     
     def get_model(self):
@@ -85,20 +93,29 @@ class MetaVIT(nn.Module):
         return self
 
     def forward(self, batch, device: torch.device):
-
+        
+        images = move_to(batch['inputs'], device)
         facial_feats = move_to(batch['facial_feats'], device)
         det_feats = move_to(batch['det_feats'], device)
         loc_feats = move_to(batch['loc_feats'], device)
-        x = self.encoder(det_feats, loc_feats, facial_feats)
-        cls_token = self.cls_token.expand(x.shape[0], -1, -1).to(device)  # stole cls_tokens impl from Phil Wang, thanks
-        x = torch.cat((cls_token, x), dim=1).double()
-        x = self.blocks(x)
-        x = self.norm(x)
-        x = self.pre_logits(x[:, 0])
-        x = self.head(x)
 
+        global_feats = self.cnn(images)['features']
+        local_feats = self.encoder(det_feats, loc_feats, facial_feats)
+        cls_token = self.cls_token.expand(local_feats.shape[0], -1, -1).to(device)  # stole cls_tokens impl from Phil Wang, thanks
+        local_feats = torch.cat((cls_token, local_feats), dim=1).double()
+        local_feats = self.blocks(local_feats)
+        local_feats = self.norm(local_feats)
+        local_feats = self.pre_logits(local_feats[:, 0])
+
+        # concat global and local features
+        feats = torch.cat([global_feats, local_feats], dim=1)
+
+        # Final head
+        logits = self.head(feats)
+
+        
         return {
-            'outputs': x,
+            'outputs': logits,
         }
 
     def get_prediction(self, adict: Dict[str, Any], device: torch.device):

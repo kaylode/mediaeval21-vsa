@@ -11,7 +11,7 @@ class ClassificationDataset(torch.utils.data.Dataset):
         self,
         **kwargs
     ):
-        super(ClassificationDataset, self).__init__(**kwargs)
+        super().__init__()
         self.classes_idx = {}
         self.classnames = None
         self.transform = None

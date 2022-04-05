@@ -42,7 +42,7 @@ class CSVDataset(ClassificationDataset):
         transform: Optional[List] = None,
         **kwargs
     ):
-        super(CSVDataset, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.image_dir = image_dir
         self.face_dir = face_dir
         self.det_dir = det_dir
@@ -120,10 +120,10 @@ class VSA_T1(CSVDataset):
         transform: Optional[List] = None,
         **kwargs
     ):
+        self.task = 'T1'
         super().__init__(image_dir, csv_path, face_dir, det_dir, transform)
 
     def _load_data(self):
-        self.classes_dist = []
         df = pd.read_csv(self.csv_path)
         fns = []
 
@@ -139,7 +139,6 @@ class VSA_T1(CSVDataset):
             image_name = lst[-1]
             classes = lst[0]
             fns.append((image_name, classes))
-            self.classes_dist.append(classes)
             
         return fns, labels
 
@@ -148,6 +147,9 @@ class VSA_T1(CSVDataset):
         Calculate distribution of classes
         """
         LOGGER.text("Calculating class distribution...", LoggerObserver.DEBUG)
+        self.classes_dist = []
+        for _, label_name in self.fns:
+            self.classes_dist.append(self.classes_idx[label_name])
         return self.classes_dist
 
     def __getitem__(self, idx: int) -> Dict:
