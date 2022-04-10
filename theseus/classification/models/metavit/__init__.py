@@ -130,12 +130,16 @@ class MetaVIT(nn.Module):
         """
         outputs = self.forward(adict, device)
 
-        probs, outputs = torch.max(torch.softmax(outputs, dim=1), dim=1)
+        if not adict['multilabel']:
+            probs, outputs = torch.max(torch.softmax(outputs, dim=1), dim=1)
+        else:
+            probs = torch.sigmoid(outputs)
+            outputs = probs > adict['threshold']
 
         probs = probs.cpu().detach().numpy()
         classids = outputs.cpu().detach().numpy()
 
-        if self.classnames:
+        if self.classnames and not adict['multilabel']:
             classnames = [self.classnames[int(clsid)] for clsid in classids]
         else:
             classnames = []

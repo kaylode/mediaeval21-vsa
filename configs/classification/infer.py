@@ -55,6 +55,8 @@ class TestPipeline(object):
             registry=DATASET_REGISTRY,
             transform=self.transform['val'],
         )
+
+        self.task = opt['global']['task'] 
         CLASSNAMES = self.dataset.classnames
 
         self.dataloader = get_instance(
@@ -94,6 +96,17 @@ class TestPipeline(object):
         
         for idx, batch in enumerate(tqdm(self.dataloader)):
             img_names = batch['img_names']
+
+            if self.task != 'T1':
+                batch.update({
+                    'threshold': 0.5,
+                    'multilabel': True
+                })
+            else:
+                batch.update({
+                    'multilabel': False
+                })
+                
             outputs = self.model.get_prediction(batch, self.device)
             preds = outputs['names']
             probs = outputs['confidences']
