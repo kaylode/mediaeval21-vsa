@@ -46,7 +46,8 @@ class SupervisedTrainer(BaseTrainer):
         self.valloader = valloader
         self.use_cuda = next(self.model.parameters()).is_cuda
 
-        self.step_per_epoch = self.scheduler.step_per_epoch
+        if self.scheduler is not None:
+            self.step_per_epoch = self.scheduler.step_per_epoch
 
 
     def training_epoch(self):
