@@ -63,7 +63,7 @@ def make_cm_figv2(cms, labels: Optional[List] = None):
 
     fig, axes = plt.subplots(nrow, nrow, figsize=(8, 8))
     
-    if num_cfms > 0:
+    if num_cfms > 1:
         for ax, cfs_matrix, label in zip(axes.flatten(), cms, labels):
             ax.set_title(f'{label}\n\n')
             plot_cfm(cfs_matrix, ax, labels = ["N", "Y"])
