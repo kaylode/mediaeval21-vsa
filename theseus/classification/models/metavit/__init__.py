@@ -5,7 +5,8 @@ import copy
 import torch.nn as nn
 from .embedding import FeatureEmbedding, SpatialEncoding
 from .utils import init_xavier
-from theseus.utilities.cuda import move_to
+from theseus.utilities.cuda import move_to, detach
+from theseus.classification.utilities.logits import logits2labels
 import torch.nn.functional as F
 
 TIMM_MODELS = [
@@ -132,10 +133,9 @@ class MetaVIT(nn.Module):
         outputs = self.forward(adict, device)['outputs']
 
         if not adict['multilabel']:
-            probs, outputs = torch.max(torch.softmax(outputs, dim=1), dim=1)
+            outputs, probs = logits2labels(outputs, type='multiclass', return_probs=True)
         else:
-            probs = torch.sigmoid(outputs)
-            outputs = probs > adict['threshold']
+            outputs, probs = logits2labels(outputs, type='multilabel', threshold=adict['threshold'], return_probs=True)
 
             if adict['no-zeroes']:
                 argmaxs = torch.argmax(probs, dim=1)
@@ -143,8 +143,8 @@ class MetaVIT(nn.Module):
                 one_hots = F.one_hot(argmaxs, outputs.shape[1])
                 outputs[tmp==0] = one_hots[tmp==0].bool()
 
-        probs = probs.cpu().detach().numpy()
-        classids = outputs.cpu().detach().numpy()
+        probs = move_to(detach(probs), torch.device('cpu')).numpy()
+        classids = move_to(detach(outputs), torch.device('cpu')).numpy()
 
         if self.classnames and not adict['multilabel']:
             classnames = [self.classnames[int(clsid)] for clsid in classids]
