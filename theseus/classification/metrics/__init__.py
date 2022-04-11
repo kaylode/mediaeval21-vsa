@@ -17,7 +17,9 @@ METRIC_REGISTRY.register(EmbeddingProjection)
 from .multilabel.accuracy import MultilabelAccuracy
 from .multilabel.f1 import MultilabelF1ScoreMetric
 from .multilabel.bl_accuracy import MultilabelBalancedAccuracy
+from .multilabel.confusion_matrix import MultilabelConfusionMatrix
 
 METRIC_REGISTRY.register(MultilabelAccuracy)
 METRIC_REGISTRY.register(MultilabelBalancedAccuracy)
 METRIC_REGISTRY.register(MultilabelF1ScoreMetric)
+METRIC_REGISTRY.register(MultilabelConfusionMatrix)
