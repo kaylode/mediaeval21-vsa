@@ -174,11 +174,11 @@ class BasePipeline(object):
         self.trainer = get_instance(
             self.opt["trainer"],
             model=self.model,
-            trainloader=self.train_dataloader,
-            valloader=self.val_dataloader,
-            metrics=self.metrics,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
+            trainloader=getattr(self, "train_dataloader", None),
+            valloader=getattr(self, "val_dataloader", None),
+            metrics=getattr(self, "metrics", None),
+            optimizer=getattr(self, "optimizer", None),
+            scheduler=getattr(self, "scheduler", None),
             debug=self.debug,
             registry=self.trainer_registry,
             callbacks=callbacks
