@@ -24,10 +24,7 @@ class ErrorCases(Metric):
         self.type = type
         self.max_samples = max_samples
         self.classnames = classnames
-
-        if self.type == 'multilabel':
-            self.threshold = kwargs.get('threshold', 0.5)
-
+        self.threshold = kwargs.get('threshold', 0.5)
         self.reset()
 
     def update(self, outputs: Dict[str, Any], batch: Dict[str, Any]):

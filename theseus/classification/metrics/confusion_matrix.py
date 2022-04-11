@@ -82,10 +82,7 @@ class ConfusionMatrix(Metric):
         self.type = type
         self.classnames = classnames
         self.num_classes = [i for i in range(len(self.classnames))] if classnames is not None else None
-
-        if self.type == 'multilabel':
-            self.threshold = kwargs.get('threshold', 0.5)
-
+        self.threshold = kwargs.get('threshold', 0.5)
         self.reset()
 
     def update(self, outputs: Dict[str, Any], batch: Dict[str, Any]):

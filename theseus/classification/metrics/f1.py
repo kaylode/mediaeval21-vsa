@@ -12,10 +12,7 @@ class F1ScoreMetric(Metric):
         super().__init__(**kwargs)
         self.average = average
         self.type =type
-
-        if self.type == 'multilabel':
-            self.threshold = kwargs.get('threshold', 0.5)
-
+        self.threshold = kwargs.get('threshold', 0.5)
         self.reset()
 
     def update(self, outputs: Dict[str, Any], batch: Dict[str, Any]):
