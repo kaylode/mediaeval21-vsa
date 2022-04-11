@@ -38,8 +38,6 @@ class BasePipeline(object):
         self.exist_ok = self.opt['global']['exist_ok']
         self.debug = self.opt['global']['debug']
         self.device_name = self.opt['global']['device']
-        self.resume = self.opt['global']['resume']
-        self.pretrained = self.opt['global']['pretrained']
         self.transform_cfg = Config.load_yaml(self.opt['global']['cfg_transform'])
         self.device = get_device(self.device_name)
         
@@ -132,6 +130,8 @@ class BasePipeline(object):
         )
 
     def init_loading(self):
+        self.resume = self.opt['global']['resume']
+        self.pretrained = self.opt['global']['pretrained']
         self.last_epoch = -1
         if self.pretrained:
             state_dict = torch.load(self.pretrained)
@@ -235,3 +235,95 @@ class BasePipeline(object):
 
         self.logger.text("Evaluating...", level=LoggerObserver.INFO)
         self.trainer.evaluate_epoch()
+
+class BaseTestPipeline(object):
+    def __init__(
+            self,
+            opt: Config
+        ):
+
+        super(BaseTestPipeline, self).__init__()
+        self.opt = opt
+
+    def init_globals(self):
+        # Main Loggers
+        self.logger = LoggerObserver.getLogger("main") 
+
+        # Global variables
+        self.exp_name = self.opt['global']['exp_name']
+        self.exist_ok = self.opt['global']['exist_ok']
+        self.debug = self.opt['global']['debug']
+        self.device_name = self.opt['global']['device']
+        self.transform_cfg = Config.load_yaml(self.opt['global']['cfg_transform'])
+        self.device = get_device(self.device_name)
+        
+        # Experiment name
+        if self.exp_name:
+            self.savedir = os.path.join(self.opt['global']['save_dir'], self.exp_name, 'test')
+            if not self.exist_ok:
+                self.savedir = get_new_folder_name(self.savedir)
+        else:
+            self.savedir = os.path.join(self.opt['global']['save_dir'], datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), 'test')
+        os.makedirs(self.savedir, exist_ok=True)
+
+        # Logging to files
+        file_logger = FileLogger(__name__, self.savedir, debug=self.debug)
+        self.logger.subscribe(file_logger)
+        self.logger.text(self.opt, level=LoggerObserver.INFO)
+        self.logger.text(f"Everything will be saved to {self.savedir}", level=LoggerObserver.INFO)
+
+    def init_registry(self):
+        self.model_registry = MODEL_REGISTRY
+        self.dataset_registry = DATASET_REGISTRY
+        self.dataloader_registry = DATALOADER_REGISTRY
+        self.transform_registry = TRANSFORM_REGISTRY
+        self.logger.text(
+            "You should override the init_registry() function", LoggerObserver.INFO
+        )
+
+    def init_test_dataloader(self):
+        # Transforms & Datasets
+        self.transform = get_instance_recursively(
+            self.transform_cfg, registry=self.transform_registry
+        )
+
+        self.dataset = get_instance(
+            self.opt['data']["dataset"],
+            registry=DATASET_REGISTRY,
+            transform=self.transform['val'],
+        )
+        
+        self.dataloader = get_instance(
+            self.opt['data']["dataloader"],
+            registry=DATALOADER_REGISTRY,
+            dataset=self.dataset,
+        )
+
+        self.logger.text(f"Number of test samples: {len(self.dataset)}", level=LoggerObserver.INFO)
+        self.logger.text(f"Number of test iterations each epoch: {len(self.dataloader)}", level=LoggerObserver.INFO)
+
+    def init_loading(self):
+        self.weights = self.opt['global']['weights']
+        if self.weights:
+            state_dict = torch.load(self.weights)
+            self.model = load_state_dict(self.model, state_dict, 'model')
+
+    def init_model(self):
+        CLASSNAMES = self.dataset.classnames
+        self.model = get_instance(
+            self.opt["model"], 
+            registry=MODEL_REGISTRY, 
+            num_classes = len(CLASSNAMES),
+            classnames=CLASSNAMES)
+        self.model = move_to(self.model, self.device)
+
+    def init_pipeline(self):
+        self.init_globals()
+        self.init_registry()
+        self.init_test_dataloader()
+        self.init_model()
+        self.init_loading()
+     
+    def inference(self):
+        raise NotImplementedError()
+        
