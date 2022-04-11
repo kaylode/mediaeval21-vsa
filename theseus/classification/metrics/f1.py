@@ -22,7 +22,7 @@ class F1ScoreMetric(Metric):
         outputs = outputs["outputs"] 
 
         outputs = logits2labels(outputs, type=self.type)
-        targets = targets.view(-1)
+        targets = targets.squeeze()
     
         self.preds +=  outputs.numpy().tolist()
         self.targets +=  targets.numpy().tolist()

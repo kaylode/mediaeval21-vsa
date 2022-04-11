@@ -37,8 +37,8 @@ class ErrorCases(Metric):
         outputs = outputs["outputs"]
         images = batch["inputs"]
         targets = batch["targets"] 
-        probs, outputs = logits2labels(outputs, type=self.type, return_probs=True)
-        targets = targets.view(-1)
+        outputs, probs = logits2labels(outputs, type=self.type, return_probs=True)
+        targets = targets.squeeze().long()
     
         outputs = outputs.numpy().tolist()
         targets = targets.numpy().tolist()
@@ -60,23 +60,22 @@ class ErrorCases(Metric):
             img_show = self.visualizer.denormalize(image)
             self.visualizer.set_image(img_show)
 
+            if self.type == 'multilabel':
+                prob = ', '.join([str(round(prob[i],3)) for i, c in enumerate(pred) if c]) 
+            else:
+                prob = str(round(prob, 3))
+                
             if self.classnames:
                 if self.type == 'multiclass':
                     pred = self.classnames[pred]
                     target = self.classnames[target]
                 else:
-                    pred = [
-                        [self.classnames[int(i)] for i, c in enumerate(clsid) if c]
-                        for clsid in pred
-                    ]
-
-                    target = [
-                        [self.classnames[int(i)] for i, c in enumerate(clsid) if c]
-                        for clsid in target
-                    ]
+                    pred = ', '.join([self.classnames[int(i)] for i, c in enumerate(pred) if c])
+                    target = ', '.join([self.classnames[int(i)] for i, c in enumerate(target) if c])
+            
 
             self.visualizer.draw_label(
-                f"GT: {target}\nP: {pred}\nC: {prob:.4f}", 
+                f"GT: {target}\nP: {pred}\nC: {prob}", 
                 fontColor=[1,0,0], 
                 fontScale=0.8,
                 thickness=2,

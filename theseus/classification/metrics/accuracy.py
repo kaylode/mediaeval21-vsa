@@ -18,12 +18,14 @@ class Accuracy(Metric):
         """
         output = output["outputs"] 
         target = batch["targets"] 
+
         prediction = logits2labels(output, self.type)
+        target = target.squeeze()
 
         correct = (prediction.view(-1) == target.view(-1)).sum()
-        correct = correct.cpu()
+
         self.total_correct += correct
-        self.sample_size += prediction.size(0)
+        self.sample_size += prediction.view(-1).size(0)
 
     def value(self):
         return {'acc': (self.total_correct / self.sample_size).item()}
