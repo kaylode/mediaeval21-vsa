@@ -1,17 +1,17 @@
-import torch
-import numpy as np
 from sklearn.metrics import f1_score
 from typing import Any, Dict, Optional
 
 from theseus.base.metrics.metric_template import Metric
+from theseus.classification.utilities.logits import logits2labels
 
 class F1ScoreMetric(Metric):
     """
     F1 Score Metric (including macro, micro)
     """
-    def __init__(self, average = 'weighted', **kwargs):
+    def __init__(self, average = 'weighted', type:str = 'multiclass', **kwargs):
         super().__init__(**kwargs)
         self.average = average
+        self.type =type
         self.reset()
 
     def update(self, outputs: Dict[str, Any], batch: Dict[str, Any]):
@@ -21,9 +21,8 @@ class F1ScoreMetric(Metric):
         targets = batch["targets"] 
         outputs = outputs["outputs"] 
 
-        outputs = torch.argmax(outputs,dim=1)
-        outputs = outputs.detach().cpu()
-        targets = targets.detach().cpu().view(-1)
+        outputs = logits2labels(outputs, type=self.type)
+        targets = targets.view(-1)
     
         self.preds +=  outputs.numpy().tolist()
         self.targets +=  targets.numpy().tolist()

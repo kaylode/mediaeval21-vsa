@@ -1,11 +1,10 @@
 from distutils.log import error
 from typing import Any, Dict, Optional, List
 
-import torch
-import torchvision
 import matplotlib.pyplot as plt
 from torchvision.transforms import functional as TFF
 from theseus.base.metrics.metric_template import Metric
+from theseus.classification.utilities.logits import logits2labels
 
 from theseus.utilities.visualization.visualizer import Visualizer
 
@@ -18,10 +17,11 @@ class ErrorCases(Metric):
         classnames for plot
     """
 
-    def __init__(self, max_samples: int = 64, classnames: Optional[List[str]]=None, **kwargs):
+    def __init__(self, max_samples: int = 64, classnames: Optional[List[str]]=None, type:str = 'multiclass', **kwargs):
         super().__init__(**kwargs)
         self.visualizer = Visualizer()
 
+        self.type = type
         self.max_samples = max_samples
         self.classnames = classnames
         self.reset()
@@ -37,10 +37,8 @@ class ErrorCases(Metric):
         outputs = outputs["outputs"]
         images = batch["inputs"]
         targets = batch["targets"] 
-        probs, outputs = torch.max(torch.softmax(outputs,dim=-1), dim=-1)
-        outputs = outputs.detach().cpu()
-        probs = probs.detach().cpu()
-        targets = targets.detach().cpu().view(-1)
+        probs, outputs = logits2labels(outputs, type=self.type, return_probs=True)
+        targets = targets.view(-1)
     
         outputs = outputs.numpy().tolist()
         targets = targets.numpy().tolist()
@@ -63,8 +61,19 @@ class ErrorCases(Metric):
             self.visualizer.set_image(img_show)
 
             if self.classnames:
-                pred = self.classnames[pred]
-                target = self.classnames[target]
+                if self.type == 'multiclass':
+                    pred = self.classnames[pred]
+                    target = self.classnames[target]
+                else:
+                    pred = [
+                        [self.classnames[int(i)] for i, c in enumerate(clsid) if c]
+                        for clsid in pred
+                    ]
+
+                    target = [
+                        [self.classnames[int(i)] for i, c in enumerate(clsid) if c]
+                        for clsid in target
+                    ]
 
             self.visualizer.draw_label(
                 f"GT: {target}\nP: {pred}\nC: {prob:.4f}", 
@@ -79,7 +88,7 @@ class ErrorCases(Metric):
             pred_batch.append(pred_img)
  
         error_imgs = self.visualizer.make_grid(pred_batch)
-        fig, ax = plt.subplots(1, figsize=(10,10))
+        fig, ax = plt.subplots(1, figsize=(8,8))
         ax.imshow(error_imgs)
         ax.axis("off")
         plt.tight_layout(pad=0)

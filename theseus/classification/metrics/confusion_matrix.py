@@ -1,10 +1,9 @@
-import torch
 from typing import Any, Dict, Optional, List
-from sklearn.metrics import confusion_matrix
 from theseus.base.metrics.metric_template import Metric
 import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
+from theseus.classification.utilities.logits import logits2labels
+from sklearn.metrics import confusion_matrix, multilabel_confusion_matrix
 
 def make_cm_fig(cm, labels: Optional[List] = None):
     """
@@ -12,7 +11,7 @@ def make_cm_fig(cm, labels: Optional[List] = None):
     labels: `Optional[List]`
         classnames for visualization
     """
-    fig, ax = plt.subplots(1, figsize=(10,10))
+    fig, ax = plt.subplots(1, figsize=(8,8))
 
     ax = sns.heatmap(cm, annot=False, 
             fmt='', cmap='Blues',ax =ax)
@@ -69,8 +68,9 @@ class ConfusionMatrix(Metric):
     """
     Confusion Matrix metric for classification
     """
-    def __init__(self, classnames=None, **kwargs):
+    def __init__(self, classnames=None, type:str = 'multiclass', **kwargs):
         super().__init__(**kwargs)
+        self.type = type
         self.classnames = classnames
         self.num_classes = [i for i in range(len(self.classnames))] if classnames is not None else None
         self.reset()
@@ -83,10 +83,7 @@ class ConfusionMatrix(Metric):
         outputs = outputs["outputs"] 
         targets = batch["targets"] 
 
-        outputs = torch.argmax(outputs,dim=1)
-        if outputs.is_cuda:
-            outputs = outputs.cpu()
-            targets = targets.cpu()
+        outputs = logits2labels(outputs, type=self.type)
 
         self.outputs +=  outputs.numpy().tolist()
         self.targets +=  targets.squeeze().numpy().tolist()
@@ -96,6 +93,10 @@ class ConfusionMatrix(Metric):
         self.targets = []
 
     def value(self):
-        values = confusion_matrix(self.outputs, self.targets, labels=self.num_classes, normalize="pred")
+        if self.type == 'multiclass':
+            values = confusion_matrix(self.outputs, self.targets, labels=self.num_classes, normalize="pred")
+        else:
+            values = multilabel_confusion_matrix(self.outputs, self.targets, labels=self.num_classes, normalize="pred")
+
         fig = make_cm_fig(values, self.classnames)
         return {"cfm": fig}
