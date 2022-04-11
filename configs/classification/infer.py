@@ -57,18 +57,19 @@ class TestPipeline(object):
         )
 
         self.task = opt['global']['task'] 
+        self.no_zeroing = opt['global']['use_no_zeroing']
         CLASSNAMES = self.dataset.classnames
 
         self.dataloader = get_instance(
             opt['data']["dataloader"],
             registry=DATALOADER_REGISTRY,
             dataset=self.dataset,
-            collate_fn=self.dataset.collate_fn
         )
 
         self.model = get_instance(
             opt["model"], 
             registry=MODEL_REGISTRY, 
+            num_classes = len(CLASSNAMES),
             classnames=CLASSNAMES)
             
         self.model = move_to(self.model, self.device)
@@ -96,11 +97,11 @@ class TestPipeline(object):
         
         for idx, batch in enumerate(tqdm(self.dataloader)):
             img_names = batch['img_names']
-
             if self.task != 'T1':
                 batch.update({
                     'threshold': 0.5,
-                    'multilabel': True
+                    'multilabel': True,
+                    'no-zeroes': self.no_zeroing
                 })
             else:
                 batch.update({
