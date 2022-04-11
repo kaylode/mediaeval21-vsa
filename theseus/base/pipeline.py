@@ -103,6 +103,7 @@ class BasePipeline(object):
         model = get_instance(
             self.opt["model"], 
             registry=self.model_registry, 
+            num_classes=len(CLASSNAMES),
             classnames=CLASSNAMES)
         model = move_to(model, self.device)
 
