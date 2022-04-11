@@ -82,6 +82,10 @@ class ConfusionMatrix(Metric):
         self.type = type
         self.classnames = classnames
         self.num_classes = [i for i in range(len(self.classnames))] if classnames is not None else None
+
+        if self.type == 'multilabel':
+            self.threshold = kwargs.get('threshold', 0.5)
+
         self.reset()
 
     def update(self, outputs: Dict[str, Any], batch: Dict[str, Any]):
@@ -92,7 +96,7 @@ class ConfusionMatrix(Metric):
         outputs = outputs["outputs"] 
         targets = batch["targets"] 
 
-        outputs = logits2labels(outputs, type=self.type)
+        outputs = logits2labels(outputs, type=self.type, threshold=self.threshold)
 
         self.outputs +=  outputs.numpy().tolist()
         self.targets +=  targets.squeeze().numpy().tolist()

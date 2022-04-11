@@ -24,6 +24,10 @@ class ErrorCases(Metric):
         self.type = type
         self.max_samples = max_samples
         self.classnames = classnames
+
+        if self.type == 'multilabel':
+            self.threshold = kwargs.get('threshold', 0.5)
+
         self.reset()
 
     def update(self, outputs: Dict[str, Any], batch: Dict[str, Any]):
@@ -37,7 +41,7 @@ class ErrorCases(Metric):
         outputs = outputs["outputs"]
         images = batch["inputs"]
         targets = batch["targets"] 
-        outputs, probs = logits2labels(outputs, type=self.type, return_probs=True)
+        outputs, probs = logits2labels(outputs, type=self.type, return_probs=True, threshold=self.threshold)
         targets = targets.squeeze().long()
     
         outputs = outputs.numpy().tolist()

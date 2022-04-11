@@ -10,6 +10,9 @@ class Accuracy(Metric):
     def __init__(self, type: str = 'multiclass', **kwargs):
         super().__init__(**kwargs)
         self.type = type
+
+        if self.type == 'multilabel':
+            self.threshold = kwargs.get('threshold', 0.5)
         self.reset()
 
     def update(self, output: Dict[str, Any], batch: Dict[str, Any]):
@@ -19,7 +22,7 @@ class Accuracy(Metric):
         output = output["outputs"] 
         target = batch["targets"] 
 
-        prediction = logits2labels(output, self.type)
+        prediction = logits2labels(output, self.type, threshold=self.threshold)
         target = target.squeeze()
 
         correct = (prediction.view(-1) == target.view(-1)).sum()

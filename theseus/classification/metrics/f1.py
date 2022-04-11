@@ -12,6 +12,10 @@ class F1ScoreMetric(Metric):
         super().__init__(**kwargs)
         self.average = average
         self.type =type
+
+        if self.type == 'multilabel':
+            self.threshold = kwargs.get('threshold', 0.5)
+
         self.reset()
 
     def update(self, outputs: Dict[str, Any], batch: Dict[str, Any]):
@@ -21,7 +25,7 @@ class F1ScoreMetric(Metric):
         targets = batch["targets"] 
         outputs = outputs["outputs"] 
 
-        outputs = logits2labels(outputs, type=self.type)
+        outputs = logits2labels(outputs, type=self.type, threshold=self.threshold)
         targets = targets.squeeze()
     
         self.preds +=  outputs.numpy().tolist()
