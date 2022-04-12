@@ -29,7 +29,7 @@ class F1ScoreMetric(Metric):
         self.targets +=  targets.numpy().tolist()
 
     def value(self):
-        score = f1_score(self.targets, self.preds, average=self.average)
+        score = f1_score(self.targets, self.preds, average=self.average, zero_division=0)
         return {f"{self.average}-f1": score}
 
     def reset(self):
