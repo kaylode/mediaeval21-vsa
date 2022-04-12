@@ -6,30 +6,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, multilabel_confusion_matrix
 from theseus.classification.utilities.logits import logits2labels
 
-def make_cm_fig(cm, labels: Optional[List] = None):
-    """
-    Make confusion matrix figure
-    labels: `Optional[List]`
-        classnames for visualization
-    """
-    fig, ax = plt.subplots(1, figsize=(8,8))
-
-    ax = sns.heatmap(cm, annot=False, 
-            fmt='', cmap='Blues',ax =ax)
-
-    ax.set_title('Confusion Matrix\n\n')
-    ax.set_xlabel('\nActual')
-    ax.set_ylabel('Predicted ')
-
-    ## Ticket labels - List must be in alphabetical order
-    if not labels:
-        labels = [str(i) for i in range(len(cm))]
-
-    ax.xaxis.set_ticklabels(labels)
-    ax.yaxis.set_ticklabels(labels, rotation=0)
-    plt.tight_layout(pad=0)
-    return fig
-
 def plot_cfm(cm, ax, labels: List):
     """
     Make confusion matrix figure
@@ -46,7 +22,7 @@ def plot_cfm(cm, ax, labels: List):
     ax.xaxis.set_ticklabels(labels)
     ax.yaxis.set_ticklabels(labels, rotation=0)
 
-def make_cm_figv2(cms, labels: Optional[List] = None):
+def make_cm_fig(cms, labels: Optional[List] = None):
     
     if cms.shape[0] > 1: # multilabel
         num_classes = cms.shape[0]
@@ -109,5 +85,5 @@ class ConfusionMatrix(Metric):
         else:
             values = multilabel_confusion_matrix(self.outputs, self.targets, labels=self.num_classes)
 
-        fig = make_cm_figv2(values, self.classnames)
+        fig = make_cm_fig(values, self.classnames)
         return {"cfm": fig}
